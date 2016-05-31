@@ -147,13 +147,16 @@ public:
 
 class Signature {
 private:
-    ffi_cif* cif;
-    Signature(ffi_abi abi, ffi_type* rtype, std::vector<ffi_type*> atypes);
+    ffi_cif* cif = NULL;
     ~Signature() {if (cif != NULL && cif != nullptr) free(cif);}
     
-public:
-    static CallAsConstructor(_);
+private:
+    static void Finalize(JSObjectRef object);
     static CallAsFunction(Execute);
+    
+public:
+    static const JSClassRef Definition;
+    static CallAsConstructor(_);
 };
 
 // MARK: NativeAccessor

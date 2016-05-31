@@ -243,7 +243,7 @@ console.log Rect instanceof Structure
     * `abi` FFI_ABI
 
 ```coffee
-constructor = (rtype, atypes, abi = FFI.ABI.DEFAULT)->
+constructor = (abi = FFI.ABI.DEFAULT, rtype, ...)->
 
 ```
 

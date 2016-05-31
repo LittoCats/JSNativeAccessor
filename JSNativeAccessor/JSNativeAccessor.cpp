@@ -1080,8 +1080,6 @@ JSObjectRef Struct::CallAsConstructor(Struct)
     structure->ft = T;
     
     JSObjectRef Struct = JSObjectMake(ctx, Definition, structure);
-//    static JSStringRef fields = JSStringCreateWithUTF8CString("__fields__");
-//    JSObjectSetProperty(ctx, Struct, fields, JSObjectMakeArray(ctx, argumentCount, arguments, NULL), kJSPropertyAttributeDontEnum | kJSPropertyAttributeReadOnly, NULL);
     
     return Struct;
 }
@@ -1108,12 +1106,123 @@ JSObjectRef Struct::Load(JSContextRef ctx)
     return Structure;
 }
 
+
+// MARK: Signature
+const JSClassRef Signature::Definition = []()->JSClassRef{
+    JSClassDefinition definition = kJSClassDefinitionEmpty;
+    definition.className = "Signature";
+    definition.callAsFunction = CallExecute;
+    definition.finalize = Finalize;
+    
+    return JSClassCreate(&definition);
+}();
+void Signature::Finalize(JSObjectRef object)
+{
+    auto signature = (Signature*)JSObjectGetPrivate(object);
+    if (signature != NULL) delete signature;
+}
+JSValueRef Signature::CallAsFunction(Execute)
+{
+    return NULL;
+}
+
+JSObjectRef Signature::CallAsConstructor(_)
+{
+    // 检查参数类型
+    // 如果第一个参数为 Number , 则为 abi 否则为 rtype, offset 从 1 开始算起，小于 1 说明不存在
+    size_t abi_offset = min(argumentCount, (size_t)(argumentCount > 0 && JSValueIsNumber(ctx, arguments[0])));
+    size_t rtype_offset = abi_offset + 1;
+    size_t atypes_offset = rtype_offset + 1;
+    
+    if (rtype_offset > argumentCount) rtype_offset = 0;
+    if (atypes_offset > argumentCount) atypes_offset = 0;
+    
+    ffi_abi abi = abi_offset ? (ffi_abi)JSValueToNumber(ctx, arguments[abi_offset - 1], exception) : FFI_DEFAULT_ABI;
+    if (*exception != NULL) return NULL;
+    
+    ffi_cif* cif = (ffi_cif*)calloc(1, sizeof(ffi_cif) + sizeof(void*) * (argumentCount - max(abi_offset, max(rtype_offset, atypes_offset)) + 1));
+    ffi_type* rtype = NULL;
+    ffi_type** atypes = (ffi_type**)((char*)cif + sizeof(ffi_type));
+    
+    rtype = rtype_offset ? *(ffi_type**)JSObjectGetPrivate((JSObjectRef)arguments[rtype_offset - 1]) : &ffi_type_void;
+    
+    if (atypes_offset) {
+        for (auto index = atypes_offset - 1; index < argumentCount; index++) {
+            atypes[index - (atypes_offset - 1)] = *(ffi_type**)JSObjectGetPrivate((JSObjectRef)arguments[index]);
+        }
+    }
+    
+    auto status = ffi_prep_cif(cif, abi, atypes_offset ? (int)(argumentCount - atypes_offset) : 0, rtype, atypes);
+    if (status != FFI_OK) {
+        static const char* MSG[] = {"", "FFI_BAD_TYPEDEF", "FFI_BAD_ABI"};
+        JSStringRef msg = JSStringCreateWithUTF8CString(MSG[status]);
+        JSValueRef err = JSValueMakeString(ctx, msg);
+        *exception = JSObjectMakeError(ctx, 1, &err, exception);
+    }
+
+    auto signature = new Signature();
+    signature->cif = cif;
+    JSObjectRef sig = JSObjectMake(ctx, Definition, signature);
+    
+    static JSStringRef abi_name = JSStringCreateWithUTF8CString("ABI");
+    static JSStringRef rt_name = JSStringCreateWithUTF8CString("RType");
+    static JSStringRef at_name = JSStringCreateWithUTF8CString("ATypes");
+    
+    JSObjectSetProperty(ctx, sig, abi_name, JSValueMakeNumber(ctx, abi), kJSPropertyAttributeReadOnly, exception);
+    JSObjectSetProperty(ctx, sig, rt_name, rtype_offset ? arguments[rtype_offset - 1] : JSValueMakeNull(ctx), kJSPropertyAttributeReadOnly, exception);
+    
+    JSObjectRef atypes_t = JSObjectMake(ctx, NULL, NULL);
+    if (atypes_offset) {
+        for (auto index = atypes_offset - 1; index < argumentCount; index++) {
+            JSObjectSetPropertyAtIndex(ctx, atypes_t, (unsigned int)(index - (atypes_offset - 1)), arguments[index], exception);
+        }
+    }
+    JSObjectSetProperty(ctx, sig, at_name, atypes_t, kJSPropertyAttributeReadOnly, exception);
+    
+    return sig;
+}
+
 static JSObjectRef LoadFFI(JSContextRef ctx)
 {
+    JSObjectRef abis = JSObjectMake(ctx, NULL, NULL);
+    map<const char*, ffi_abi> abisMap = {
+#define IABI(abi) {"" # abi, FFI_## abi ## _ABI},
+        
+        IABI(FIRST)
+        IABI(DEFAULT)
+        IABI(LAST)
+        {"SYSV", FFI_SYSV},
+        {"STDCALL", FFI_STDCALL},
+        {"THISCALL", FFI_THISCALL},
+        {"FASTCALL", FFI_FASTCALL},
+        {"PASCAL", FFI_PASCAL},
+        {"REGISTER", FFI_REGISTER},
+        
+        /* ---- Intel x86 Win32 ---------- */
+#ifdef X86_WIN32
+        {"MS_CDECL", FFI_MS_CDECL},
+        
+#elif defined(X86_WIN64)
+        {"WIN64", FFI_WIN64},
+#else
+        /* ---- Intel x86 and AMD x86-64 - */
+        {"UNIX64", FFI_UNIX64},   /* Unix variants all use the same ABI for x86-64  */
+#endif
+        
+#undef IABI
+    };
+    for (auto iter = abisMap.begin(); iter != abisMap.end(); iter++) {
+        JSStringRef name = JSStringCreateWithUTF8CString(iter->first);
+        JSObjectSetProperty(ctx, abis, name, JSValueMakeNumber(ctx, iter->second), kJSPropertyAttributeReadOnly, NULL);
+        JSStringRelease(name);
+    }
+    
     JSObjectRef ffi = JSObjectMake(ctx, NULL, NULL);
     map<const char*, JSValueRef> pmap = {
         {"BuildIn", LoadBuildIn(ctx)},
-        {"Structure", Struct::Load(ctx)}
+        {"Structure", Struct::Load(ctx)},
+        {"Signature", JSObjectMakeConstructor(ctx, Signature::Definition, Signature::Construct_)},
+        {"ABI", abis}
     };
     
     for (auto iter = pmap.begin(); iter != pmap.end(); iter++) {

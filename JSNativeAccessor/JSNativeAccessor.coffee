@@ -6,7 +6,11 @@ Object.defineProperty JNA, 'Buffer', value: Buffer
 Buffer::equals = (other)-> 0 is @compare other
 Buffer::toJSON = -> "<Buffer #{@toString('hex', 0 , 16).match(/\S{8}/g).join('')}#{if @length > 16 then ' ...' else ''}>"
 
-console.log FFI.BuildIn.Short.__size__
+# 重写 BuildIn 类型的 toJSON 方法
+do ({BuildIn} = FFI)->
+  for N, T of BuildIn
+    do (N, T)->T.toJSON or T.toJSON = ->N
+
 
 typedef = do ({BuildIn, Structure} = FFI)->
   Object.defineProperty Structure::, '__init__', value: do -> __init__ = (instance, holder = {})->
@@ -33,6 +37,10 @@ typedef = do ({BuildIn, Structure} = FFI)->
 
       offset += F.__size__
 
+  toJSON = ->
+    (json or json = {})[N] = T for [N, T] in @__fields__
+    json
+
   typedef = (define)->
     return define if define instanceof BuildIn
     fields = []
@@ -43,16 +51,14 @@ typedef = do ({BuildIn, Structure} = FFI)->
     argv = ("fields[#{index}][1]" for index in [0...fields.length]).join ', '
     structure = eval "new Structure(#{argv})"
     Object.defineProperty structure, '__fields__', value: fields
-    structure[field[0]] = field[1] for field in fields
+    structure[N] = F for [N, F] in fields
+    Object.defineProperty structure, 'toJSON', value: toJSON
     structure
 
-Cube = typedef x: FFI.BuildIn.Float, y: FFI.BuildIn.Float, z: u: FFI.BuildIn.Bool, l: FFI.BuildIn.Double, b: FFI.BuildIn.Short
-console.log (F for F of Cube)
-  
-cube =  new Cube x: 128,y: 512, z: u: 64, b: 16, l: 7461
-# console.log cube.x.getValue()
-# console.log cube.z.b.getValue()
-cube.z.l = new FFI.BuildIn.Float 1234
-console.log cube.z.l.getValue()
+do ({Signature, ABI, BuildIn} = FFI)->
+  Signature::toJSON = ->
+    ABI: @ABI
+    RType: @RType or BuildIn.Void
+    ATypes: (T for I, T of @ATypes)
 
-# console.log new FFI.BuildIn.Pointer(new Buffer).getValue()
+  console.log JSON.stringify new Signature BuildIn.Float, typedef x: BuildIn.Float, y: BuildIn.Double, z: t: BuildIn.Int, l: BuildIn.Bool
