@@ -1129,7 +1129,7 @@ JSValueRef Signature::CallAsFunction(Execute)
     // 第一个参数为 return value 类型为： Buffer
     // 最后一个参数为 异步回调函数，如果最后一个参数为 undefined ，则进行同步调用，目前仅支持同步调用
     // 其余参数为 C 函数执行需要的参数 类型为： Buffer
-    // 该方法不应该被直接调用，应通过 signature.syncCall signature.asyncCall 调用
+    // 该方法不应该被直接调用，详见文档
     
     auto cif = *(ffi_cif**)JSObjectGetPrivate(function);
     void (*fn)() = FFI_FN(*(void**)((Buffer*)JSObjectGetPrivate(thisObject))->bytes);

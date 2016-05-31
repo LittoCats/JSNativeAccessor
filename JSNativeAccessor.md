@@ -158,7 +158,6 @@ BuildIn.isBuildIn = (ins)-> ins instanceOf Buffer
 
 * `Void`
 * `Pointer`
-* `Structure`
 * `Numeric`
     * `Float`
     * `Double`
@@ -187,8 +186,18 @@ BuildIn.isBuildIn = (ins)-> ins instanceOf Buffer
 * `Size`
 * `SSize`
  
-`Numeric` 类型实例有一个特殊的方法 `toNumber()`，通过方法可以获取其内存储的数据。
-因此，也可以把 `Numeric` 类型实例传递给 `Numeric` 构造函数。
+`BuildIn` 实例具有两个 `Buffer` 实例没有的方法：
+
+```coffee
+buildIn.getValue = ->
+buildIn.setValue = ->
+```
+
+`Numeric` 实例，getValue 方法返回一个 Number 对象，但是由于 `vm` 中的数值只有 double，因此部分类型将会溢出。
+
+`Pointer` 实例的 getValue 方法返回一个字符串 (e.g. 0x0000000100704570，部分平台不显示多余的0： 0x100704570)，该字符串是通过 `sprintf` 打印指针获得，不同平台，长度可能不同。
+
+
 
 `Pointer` 类型用于存储一个内存指针，`Pointer` 构造函数的参数必须是 `Buffer` 实例，因为只有 `Buffer` 实例是 Ｃ 类型的数据，才能获取其指针；如果没有传递参数，则存储 `NULL` 指针。
 同 `Buffer` 实例的 `__pointer__` 属性一样，`Pointer` 具有 `__buffer__` 属性。
@@ -238,17 +247,47 @@ console.log Rect instanceof Structure
 
 * `constructor`
 
+    * `abi` FFI.ABI
     * `rtype` `BuildIn` or `Struct`
-    * `atypes` `Array`
-    * `abi` FFI_ABI
+    * `atype ...` `BuildIn` or `Struct`
+    
 
 ```coffee
 constructor = (abi = FFI.ABI.DEFAULT, rtype, ...)->
 
 ```
 
-```c++
-class Signature {
-    ffi_cif* cif;
-};
+`Signature` 构造函数的参数除 `abi` 外，其余参数必须为 `BuildIn` 或 `Struct` 类，`c++` 实现中并没有对类型进行检测，如果参数类型不正确，将产生不可预知的错误，这一点需要格外注意。
+
+`Signature` 实例是一个伪函数对象，因此可以使用 `()` 操作符；因为 `Signature` 
+实例只是描述了参数及返回值类型信息，并没有实现具体的功能，因此不能直接调用，必须将其赋值给函数指针对象，作为其方法调用；下例是调用标准Ｃ中 `isalnum` 的过程
+
+```coffee
+{isalnum} = STDC.type
+isalnum.call = new Signature FFI.BuildIn.Int, FFI.BuildIn.Int
+
+rvalue = new FFI.BuildIn.Int
+avalue = new FFI.BuildIn.Int 98
+isalnum.call rvalue, avalue
+
+console.log rvalue.getValue()
+# 1
+```
+
+#### Best Practice
+
+这里提供一个简单的 C 函数的包装方式：
+
+```coffee
+isalnum = do ({isalnum} = STDC.type, cb = ->)->
+  isalnum.call = new FFI.Signature FFI.BuildIn.Int, FFI.BuildIn.Int
+  return (num)->
+  return false unless typeof num is 'number'
+  rv = new FFI.BuildIn.Int 0
+  num = new FFI.BuildIn.Int num
+  isalnum.call rv, num , cb
+  return rv.getValue() isnt 0
+
+console.log isalnum 98  # true
+console.log isalnum 96  # false
 ```

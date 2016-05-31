@@ -83,7 +83,7 @@
 		A12B10F21CF5338A00619066 /* libJSNativeAccessor.dylib */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libJSNativeAccessor.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		A12B10F51CF5338A00619066 /* JSNativeAccessor.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = JSNativeAccessor.hpp; sourceTree = "<group>"; };
 		A12B10F91CF5338A00619066 /* JSNativeAccessor.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = JSNativeAccessor.cpp; sourceTree = "<group>"; };
-		A12B110A1CF5339400619066 /* libJSNativeAccessor-iOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libJSNativeAccessor-iOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A12B110A1CF5339400619066 /* libJSNativeAccessor.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libJSNativeAccessor.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		A12B110D1CF5342600619066 /* ffi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ffi.h; sourceTree = "<group>"; };
 		A12B110E1CF5342600619066 /* ffi_arm64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ffi_arm64.h; sourceTree = "<group>"; };
 		A12B110F1CF5342600619066 /* ffi_armv7.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ffi_armv7.h; sourceTree = "<group>"; };
@@ -157,7 +157,7 @@
 			isa = PBXGroup;
 			children = (
 				A12B10F21CF5338A00619066 /* libJSNativeAccessor.dylib */,
-				A12B110A1CF5339400619066 /* libJSNativeAccessor-iOS.a */,
+				A12B110A1CF5339400619066 /* libJSNativeAccessor.a */,
 				A12B11491CF536B500619066 /* Accessor */,
 			);
 			name = Products;
@@ -330,7 +330,7 @@
 			);
 			name = "JSNativeAccessor-iOS";
 			productName = JSNativeAccessor;
-			productReference = A12B110A1CF5339400619066 /* libJSNativeAccessor-iOS.a */;
+			productReference = A12B110A1CF5339400619066 /* libJSNativeAccessor.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 		A12B11481CF536B500619066 /* Accessor */ = {
@@ -595,7 +595,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/JSNativeAccessor/libffi/iphone",
 				);
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = JSNativeAccessor;
 				SDKROOT = iphoneos;
 			};
 			name = Debug;
@@ -611,7 +611,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/JSNativeAccessor/libffi/iphone",
 				);
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = JSNativeAccessor;
 				SDKROOT = iphoneos;
 			};
 			name = Release;
