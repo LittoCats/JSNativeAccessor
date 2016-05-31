@@ -61,4 +61,11 @@ do ({Signature, ABI, BuildIn} = FFI)->
     RType: @RType or BuildIn.Void
     ATypes: (T for I, T of @ATypes)
 
-  console.log JSON.stringify new Signature BuildIn.Float, typedef x: BuildIn.Float, y: BuildIn.Double, z: t: BuildIn.Int, l: BuildIn.Bool
+do ({isalnum,isalpha,iscntrl,isdigit,isgraph,islower,isprint,ispunct,isspace,isupper,isxdigit} = STDC.type)->
+  isalnum.call = new FFI.Signature FFI.BuildIn.Int, FFI.BuildIn.Int
+  console.log JSON.stringify isalnum.call
+  rv = new FFI.BuildIn.Int
+  num = new FFI.BuildIn.Int 98
+  isalnum.call rv, num , ->
+
+  console.log rv.getValue()

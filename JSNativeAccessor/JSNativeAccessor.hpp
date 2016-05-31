@@ -152,6 +152,10 @@ private:
     
 private:
     static void Finalize(JSObjectRef object);
+    static CallAsFunction(Func);
+    
+    // 调用 signature 时，参数会被检测并格式化后，转发到该方法
+    // 该方法的 thisObject 依然为 signature
     static CallAsFunction(Execute);
     
 public:

@@ -1111,8 +1111,9 @@ JSObjectRef Struct::Load(JSContextRef ctx)
 const JSClassRef Signature::Definition = []()->JSClassRef{
     JSClassDefinition definition = kJSClassDefinitionEmpty;
     definition.className = "Signature";
-    definition.callAsFunction = CallExecute;
     definition.finalize = Finalize;
+    
+    definition.callAsFunction = CallExecute;
     
     return JSClassCreate(&definition);
 }();
@@ -1121,8 +1122,26 @@ void Signature::Finalize(JSObjectRef object)
     auto signature = (Signature*)JSObjectGetPrivate(object);
     if (signature != NULL) delete signature;
 }
+
 JSValueRef Signature::CallAsFunction(Execute)
 {
+    // thisObject 为 Buffer 对象，保存了 C 函数指针
+    // 第一个参数为 return value 类型为： Buffer
+    // 最后一个参数为 异步回调函数，如果最后一个参数为 undefined ，则进行同步调用，目前仅支持同步调用
+    // 其余参数为 C 函数执行需要的参数 类型为： Buffer
+    // 该方法不应该被直接调用，应通过 signature.syncCall signature.asyncCall 调用
+    
+    auto cif = *(ffi_cif**)JSObjectGetPrivate(function);
+    void (*fn)() = FFI_FN(*(void**)((Buffer*)JSObjectGetPrivate(thisObject))->bytes);
+    void* rvalue = (void*)((Buffer*)JSObjectGetPrivate((JSObjectRef)arguments[0]))->bytes;
+    
+    void** avalue = new void*[argumentCount - 2];
+    for (auto index = 1; index < argumentCount - 1; index++) {
+        avalue[index - 1] = (void*)((Buffer*)JSObjectGetPrivate((JSObjectRef)arguments[index]))->bytes;
+    }
+    
+    ffi_call(cif, fn, rvalue, avalue);
+    delete [] avalue;
     return NULL;
 }
 
@@ -1140,9 +1159,11 @@ JSObjectRef Signature::CallAsConstructor(_)
     ffi_abi abi = abi_offset ? (ffi_abi)JSValueToNumber(ctx, arguments[abi_offset - 1], exception) : FFI_DEFAULT_ABI;
     if (*exception != NULL) return NULL;
     
-    ffi_cif* cif = (ffi_cif*)calloc(1, sizeof(ffi_cif) + sizeof(void*) * (argumentCount - max(abi_offset, max(rtype_offset, atypes_offset)) + 1));
+    int nargs = atypes_offset ? (int)(argumentCount - (atypes_offset - 1)) : 0;
+    
+    ffi_cif* cif = (ffi_cif*)calloc(1, sizeof(ffi_cif) + sizeof(ffi_type*) * (nargs + 1));
     ffi_type* rtype = NULL;
-    ffi_type** atypes = (ffi_type**)((char*)cif + sizeof(ffi_type));
+    ffi_type** atypes = (ffi_type**)(cif + 1);
     
     rtype = rtype_offset ? *(ffi_type**)JSObjectGetPrivate((JSObjectRef)arguments[rtype_offset - 1]) : &ffi_type_void;
     
@@ -1152,7 +1173,7 @@ JSObjectRef Signature::CallAsConstructor(_)
         }
     }
     
-    auto status = ffi_prep_cif(cif, abi, atypes_offset ? (int)(argumentCount - atypes_offset) : 0, rtype, atypes);
+    auto status = ffi_prep_cif(cif, abi, nargs, rtype, atypes);
     if (status != FFI_OK) {
         static const char* MSG[] = {"", "FFI_BAD_TYPEDEF", "FFI_BAD_ABI"};
         JSStringRef msg = JSStringCreateWithUTF8CString(MSG[status]);
@@ -1167,12 +1188,14 @@ JSObjectRef Signature::CallAsConstructor(_)
     static JSStringRef abi_name = JSStringCreateWithUTF8CString("ABI");
     static JSStringRef rt_name = JSStringCreateWithUTF8CString("RType");
     static JSStringRef at_name = JSStringCreateWithUTF8CString("ATypes");
+    static JSStringRef at_len_name = JSStringCreateWithUTF8CString("length");
     
     JSObjectSetProperty(ctx, sig, abi_name, JSValueMakeNumber(ctx, abi), kJSPropertyAttributeReadOnly, exception);
     JSObjectSetProperty(ctx, sig, rt_name, rtype_offset ? arguments[rtype_offset - 1] : JSValueMakeNull(ctx), kJSPropertyAttributeReadOnly, exception);
     
     JSObjectRef atypes_t = JSObjectMake(ctx, NULL, NULL);
     if (atypes_offset) {
+        JSObjectSetProperty(ctx, atypes_t, at_len_name, JSValueMakeNumber(ctx, nargs), kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum, exception);
         for (auto index = atypes_offset - 1; index < argumentCount; index++) {
             JSObjectSetPropertyAtIndex(ctx, atypes_t, (unsigned int)(index - (atypes_offset - 1)), arguments[index], exception);
         }
