@@ -1,0 +1,687 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A11D836F1CF84D330070C622 /* STDC in Sources */ = {isa = PBXBuildFile; fileRef = A11D836D1CF84D330070C622 /* STDC */; };
+		A12B10F61CF5338A00619066 /* JSNativeAccessor.hpp in Headers */ = {isa = PBXBuildFile; fileRef = A12B10F51CF5338A00619066 /* JSNativeAccessor.hpp */; };
+		A12B10FA1CF5338A00619066 /* JSNativeAccessor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A12B10F91CF5338A00619066 /* JSNativeAccessor.cpp */; };
+		A12B11021CF5339400619066 /* JSNativeAccessor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A12B10F91CF5338A00619066 /* JSNativeAccessor.cpp */; };
+		A12B11061CF5339400619066 /* JSNativeAccessor.hpp in Headers */ = {isa = PBXBuildFile; fileRef = A12B10F51CF5338A00619066 /* JSNativeAccessor.hpp */; };
+		A12B11211CF5342600619066 /* ffi.h in Headers */ = {isa = PBXBuildFile; fileRef = A12B110D1CF5342600619066 /* ffi.h */; };
+		A12B11221CF5342600619066 /* ffi.h in Headers */ = {isa = PBXBuildFile; fileRef = A12B110D1CF5342600619066 /* ffi.h */; };
+		A12B11231CF5342600619066 /* ffi_arm64.h in Headers */ = {isa = PBXBuildFile; fileRef = A12B110E1CF5342600619066 /* ffi_arm64.h */; };
+		A12B11241CF5342600619066 /* ffi_arm64.h in Headers */ = {isa = PBXBuildFile; fileRef = A12B110E1CF5342600619066 /* ffi_arm64.h */; };
+		A12B11251CF5342600619066 /* ffi_armv7.h in Headers */ = {isa = PBXBuildFile; fileRef = A12B110F1CF5342600619066 /* ffi_armv7.h */; };
+		A12B11261CF5342600619066 /* ffi_armv7.h in Headers */ = {isa = PBXBuildFile; fileRef = A12B110F1CF5342600619066 /* ffi_armv7.h */; };
+		A12B11271CF5342600619066 /* ffi_common.h in Headers */ = {isa = PBXBuildFile; fileRef = A12B11101CF5342600619066 /* ffi_common.h */; };
+		A12B11281CF5342600619066 /* ffi_common.h in Headers */ = {isa = PBXBuildFile; fileRef = A12B11101CF5342600619066 /* ffi_common.h */; };
+		A12B11291CF5342600619066 /* ffi_i386.h in Headers */ = {isa = PBXBuildFile; fileRef = A12B11111CF5342600619066 /* ffi_i386.h */; };
+		A12B112A1CF5342600619066 /* ffi_i386.h in Headers */ = {isa = PBXBuildFile; fileRef = A12B11111CF5342600619066 /* ffi_i386.h */; };
+		A12B112B1CF5342600619066 /* ffi_x86_64.h in Headers */ = {isa = PBXBuildFile; fileRef = A12B11121CF5342600619066 /* ffi_x86_64.h */; };
+		A12B112C1CF5342600619066 /* ffi_x86_64.h in Headers */ = {isa = PBXBuildFile; fileRef = A12B11121CF5342600619066 /* ffi_x86_64.h */; };
+		A12B112D1CF5342600619066 /* fficonfig.h in Headers */ = {isa = PBXBuildFile; fileRef = A12B11131CF5342600619066 /* fficonfig.h */; };
+		A12B112E1CF5342600619066 /* fficonfig.h in Headers */ = {isa = PBXBuildFile; fileRef = A12B11131CF5342600619066 /* fficonfig.h */; };
+		A12B112F1CF5342600619066 /* fficonfig_arm64.h in Headers */ = {isa = PBXBuildFile; fileRef = A12B11141CF5342600619066 /* fficonfig_arm64.h */; };
+		A12B11301CF5342600619066 /* fficonfig_arm64.h in Headers */ = {isa = PBXBuildFile; fileRef = A12B11141CF5342600619066 /* fficonfig_arm64.h */; };
+		A12B11311CF5342600619066 /* fficonfig_armv7.h in Headers */ = {isa = PBXBuildFile; fileRef = A12B11151CF5342600619066 /* fficonfig_armv7.h */; };
+		A12B11321CF5342600619066 /* fficonfig_armv7.h in Headers */ = {isa = PBXBuildFile; fileRef = A12B11151CF5342600619066 /* fficonfig_armv7.h */; };
+		A12B11331CF5342600619066 /* fficonfig_i386.h in Headers */ = {isa = PBXBuildFile; fileRef = A12B11161CF5342600619066 /* fficonfig_i386.h */; };
+		A12B11341CF5342600619066 /* fficonfig_i386.h in Headers */ = {isa = PBXBuildFile; fileRef = A12B11161CF5342600619066 /* fficonfig_i386.h */; };
+		A12B11351CF5342600619066 /* fficonfig_x86_64.h in Headers */ = {isa = PBXBuildFile; fileRef = A12B11171CF5342600619066 /* fficonfig_x86_64.h */; };
+		A12B11361CF5342600619066 /* fficonfig_x86_64.h in Headers */ = {isa = PBXBuildFile; fileRef = A12B11171CF5342600619066 /* fficonfig_x86_64.h */; };
+		A12B11371CF5342600619066 /* ffitarget.h in Headers */ = {isa = PBXBuildFile; fileRef = A12B11181CF5342600619066 /* ffitarget.h */; };
+		A12B11381CF5342600619066 /* ffitarget.h in Headers */ = {isa = PBXBuildFile; fileRef = A12B11181CF5342600619066 /* ffitarget.h */; };
+		A12B11391CF5342600619066 /* ffitarget_arm64.h in Headers */ = {isa = PBXBuildFile; fileRef = A12B11191CF5342600619066 /* ffitarget_arm64.h */; };
+		A12B113A1CF5342600619066 /* ffitarget_arm64.h in Headers */ = {isa = PBXBuildFile; fileRef = A12B11191CF5342600619066 /* ffitarget_arm64.h */; };
+		A12B113B1CF5342600619066 /* ffitarget_armv7.h in Headers */ = {isa = PBXBuildFile; fileRef = A12B111A1CF5342600619066 /* ffitarget_armv7.h */; };
+		A12B113C1CF5342600619066 /* ffitarget_armv7.h in Headers */ = {isa = PBXBuildFile; fileRef = A12B111A1CF5342600619066 /* ffitarget_armv7.h */; };
+		A12B113D1CF5342600619066 /* ffitarget_i386.h in Headers */ = {isa = PBXBuildFile; fileRef = A12B111B1CF5342600619066 /* ffitarget_i386.h */; };
+		A12B113E1CF5342600619066 /* ffitarget_i386.h in Headers */ = {isa = PBXBuildFile; fileRef = A12B111B1CF5342600619066 /* ffitarget_i386.h */; };
+		A12B113F1CF5342600619066 /* ffitarget_x86_64.h in Headers */ = {isa = PBXBuildFile; fileRef = A12B111C1CF5342600619066 /* ffitarget_x86_64.h */; };
+		A12B11401CF5342600619066 /* ffitarget_x86_64.h in Headers */ = {isa = PBXBuildFile; fileRef = A12B111C1CF5342600619066 /* ffitarget_x86_64.h */; };
+		A12B11421CF5342600619066 /* libffi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A12B111E1CF5342600619066 /* libffi.a */; };
+		A12B114C1CF536B500619066 /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = A12B114B1CF536B500619066 /* main.mm */; };
+		A12B11501CF536F900619066 /* libJSNativeAccessor.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = A12B10F21CF5338A00619066 /* libJSNativeAccessor.dylib */; };
+		A12B115E1CF5515500619066 /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A12B115D1CF5515500619066 /* JavaScriptCore.framework */; };
+		A12B11601CF5515B00619066 /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = A12B115F1CF5515B00619066 /* libc++.tbd */; };
+		A12B11621CF5516100619066 /* libstdc++.6.0.9.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = A12B11611CF5516100619066 /* libstdc++.6.0.9.tbd */; };
+		A12B11631CF582B000619066 /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A12B115D1CF5515500619066 /* JavaScriptCore.framework */; };
+		A12B11641CF58A0900619066 /* ffi.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = A12B11201CF5342600619066 /* ffi.dylib */; };
+		A12B11661CF58A4600619066 /* ffi.dylib.dSYM in Frameworks */ = {isa = PBXBuildFile; fileRef = A12B11561CF53B8400619066 /* ffi.dylib.dSYM */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		A12B11531CF537EE00619066 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A12B10EA1CF5338A00619066 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A12B10F11CF5338A00619066;
+			remoteInfo = "JSNativeAccessor-Mac";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A12B11471CF536B500619066 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 12;
+			dstPath = "";
+			dstSubfolderSpec = 16;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		A11D83551CF6CCA40070C622 /* buildin.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = buildin.py; sourceTree = "<group>"; };
+		A11D836D1CF84D330070C622 /* STDC */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = STDC; sourceTree = "<group>"; };
+		A12B10F21CF5338A00619066 /* libJSNativeAccessor.dylib */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libJSNativeAccessor.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		A12B10F51CF5338A00619066 /* JSNativeAccessor.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = JSNativeAccessor.hpp; sourceTree = "<group>"; };
+		A12B10F91CF5338A00619066 /* JSNativeAccessor.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = JSNativeAccessor.cpp; sourceTree = "<group>"; };
+		A12B110A1CF5339400619066 /* libJSNativeAccessor-iOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libJSNativeAccessor-iOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A12B110D1CF5342600619066 /* ffi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ffi.h; sourceTree = "<group>"; };
+		A12B110E1CF5342600619066 /* ffi_arm64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ffi_arm64.h; sourceTree = "<group>"; };
+		A12B110F1CF5342600619066 /* ffi_armv7.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ffi_armv7.h; sourceTree = "<group>"; };
+		A12B11101CF5342600619066 /* ffi_common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ffi_common.h; sourceTree = "<group>"; };
+		A12B11111CF5342600619066 /* ffi_i386.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ffi_i386.h; sourceTree = "<group>"; };
+		A12B11121CF5342600619066 /* ffi_x86_64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ffi_x86_64.h; sourceTree = "<group>"; };
+		A12B11131CF5342600619066 /* fficonfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fficonfig.h; sourceTree = "<group>"; };
+		A12B11141CF5342600619066 /* fficonfig_arm64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fficonfig_arm64.h; sourceTree = "<group>"; };
+		A12B11151CF5342600619066 /* fficonfig_armv7.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fficonfig_armv7.h; sourceTree = "<group>"; };
+		A12B11161CF5342600619066 /* fficonfig_i386.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fficonfig_i386.h; sourceTree = "<group>"; };
+		A12B11171CF5342600619066 /* fficonfig_x86_64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fficonfig_x86_64.h; sourceTree = "<group>"; };
+		A12B11181CF5342600619066 /* ffitarget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ffitarget.h; sourceTree = "<group>"; };
+		A12B11191CF5342600619066 /* ffitarget_arm64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ffitarget_arm64.h; sourceTree = "<group>"; };
+		A12B111A1CF5342600619066 /* ffitarget_armv7.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ffitarget_armv7.h; sourceTree = "<group>"; };
+		A12B111B1CF5342600619066 /* ffitarget_i386.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ffitarget_i386.h; sourceTree = "<group>"; };
+		A12B111C1CF5342600619066 /* ffitarget_x86_64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ffitarget_x86_64.h; sourceTree = "<group>"; };
+		A12B111E1CF5342600619066 /* libffi.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libffi.a; sourceTree = "<group>"; };
+		A12B11201CF5342600619066 /* ffi.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = ffi.dylib; sourceTree = "<group>"; };
+		A12B11491CF536B500619066 /* Accessor */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Accessor; sourceTree = BUILT_PRODUCTS_DIR; };
+		A12B114B1CF536B500619066 /* main.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
+		A12B11561CF53B8400619066 /* ffi.dylib.dSYM */ = {isa = PBXFileReference; lastKnownFileType = wrapper.dsym; name = ffi.dylib.dSYM; path = JSNativeAccessor/libffi/osx/ffi.dylib.dSYM; sourceTree = "<group>"; };
+		A12B115D1CF5515500619066 /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		A12B115F1CF5515B00619066 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
+		A12B11611CF5516100619066 /* libstdc++.6.0.9.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libstdc++.6.0.9.tbd"; path = "usr/lib/libstdc++.6.0.9.tbd"; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A12B10EF1CF5338A00619066 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A12B11641CF58A0900619066 /* ffi.dylib in Frameworks */,
+				A12B11631CF582B000619066 /* JavaScriptCore.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A12B11031CF5339400619066 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A12B11421CF5342600619066 /* libffi.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A12B11461CF536B500619066 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A12B11661CF58A4600619066 /* ffi.dylib.dSYM in Frameworks */,
+				A12B11621CF5516100619066 /* libstdc++.6.0.9.tbd in Frameworks */,
+				A12B11601CF5515B00619066 /* libc++.tbd in Frameworks */,
+				A12B115E1CF5515500619066 /* JavaScriptCore.framework in Frameworks */,
+				A12B11501CF536F900619066 /* libJSNativeAccessor.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A12B10E91CF5338A00619066 = {
+			isa = PBXGroup;
+			children = (
+				A12B10F41CF5338A00619066 /* JSNativeAccessor */,
+				A12B114A1CF536B500619066 /* Accessor */,
+				A12B11581CF53C2E00619066 /* Frameworks */,
+				A12B10F31CF5338A00619066 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A12B10F31CF5338A00619066 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A12B10F21CF5338A00619066 /* libJSNativeAccessor.dylib */,
+				A12B110A1CF5339400619066 /* libJSNativeAccessor-iOS.a */,
+				A12B11491CF536B500619066 /* Accessor */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A12B10F41CF5338A00619066 /* JSNativeAccessor */ = {
+			isa = PBXGroup;
+			children = (
+				A12B110B1CF5342600619066 /* libffi */,
+				A12B10F51CF5338A00619066 /* JSNativeAccessor.hpp */,
+				A12B10F91CF5338A00619066 /* JSNativeAccessor.cpp */,
+				A11D83551CF6CCA40070C622 /* buildin.py */,
+				A11D836D1CF84D330070C622 /* STDC */,
+			);
+			path = JSNativeAccessor;
+			sourceTree = "<group>";
+		};
+		A12B110B1CF5342600619066 /* libffi */ = {
+			isa = PBXGroup;
+			children = (
+				A12B110C1CF5342600619066 /* include */,
+				A12B111D1CF5342600619066 /* iphone */,
+				A12B111F1CF5342600619066 /* osx */,
+			);
+			path = libffi;
+			sourceTree = "<group>";
+		};
+		A12B110C1CF5342600619066 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				A12B110D1CF5342600619066 /* ffi.h */,
+				A12B110E1CF5342600619066 /* ffi_arm64.h */,
+				A12B110F1CF5342600619066 /* ffi_armv7.h */,
+				A12B11101CF5342600619066 /* ffi_common.h */,
+				A12B11111CF5342600619066 /* ffi_i386.h */,
+				A12B11121CF5342600619066 /* ffi_x86_64.h */,
+				A12B11131CF5342600619066 /* fficonfig.h */,
+				A12B11141CF5342600619066 /* fficonfig_arm64.h */,
+				A12B11151CF5342600619066 /* fficonfig_armv7.h */,
+				A12B11161CF5342600619066 /* fficonfig_i386.h */,
+				A12B11171CF5342600619066 /* fficonfig_x86_64.h */,
+				A12B11181CF5342600619066 /* ffitarget.h */,
+				A12B11191CF5342600619066 /* ffitarget_arm64.h */,
+				A12B111A1CF5342600619066 /* ffitarget_armv7.h */,
+				A12B111B1CF5342600619066 /* ffitarget_i386.h */,
+				A12B111C1CF5342600619066 /* ffitarget_x86_64.h */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		A12B111D1CF5342600619066 /* iphone */ = {
+			isa = PBXGroup;
+			children = (
+				A12B111E1CF5342600619066 /* libffi.a */,
+			);
+			path = iphone;
+			sourceTree = "<group>";
+		};
+		A12B111F1CF5342600619066 /* osx */ = {
+			isa = PBXGroup;
+			children = (
+				A12B11201CF5342600619066 /* ffi.dylib */,
+			);
+			path = osx;
+			sourceTree = "<group>";
+		};
+		A12B114A1CF536B500619066 /* Accessor */ = {
+			isa = PBXGroup;
+			children = (
+				A12B114B1CF536B500619066 /* main.mm */,
+			);
+			path = Accessor;
+			sourceTree = "<group>";
+		};
+		A12B11581CF53C2E00619066 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				A12B11611CF5516100619066 /* libstdc++.6.0.9.tbd */,
+				A12B115F1CF5515B00619066 /* libc++.tbd */,
+				A12B115D1CF5515500619066 /* JavaScriptCore.framework */,
+				A12B11561CF53B8400619066 /* ffi.dylib.dSYM */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		A12B10F01CF5338A00619066 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A12B11211CF5342600619066 /* ffi.h in Headers */,
+				A12B11371CF5342600619066 /* ffitarget.h in Headers */,
+				A12B10F61CF5338A00619066 /* JSNativeAccessor.hpp in Headers */,
+				A12B113D1CF5342600619066 /* ffitarget_i386.h in Headers */,
+				A12B112F1CF5342600619066 /* fficonfig_arm64.h in Headers */,
+				A12B11311CF5342600619066 /* fficonfig_armv7.h in Headers */,
+				A12B112D1CF5342600619066 /* fficonfig.h in Headers */,
+				A12B11331CF5342600619066 /* fficonfig_i386.h in Headers */,
+				A12B11231CF5342600619066 /* ffi_arm64.h in Headers */,
+				A12B11291CF5342600619066 /* ffi_i386.h in Headers */,
+				A12B112B1CF5342600619066 /* ffi_x86_64.h in Headers */,
+				A12B11391CF5342600619066 /* ffitarget_arm64.h in Headers */,
+				A12B11251CF5342600619066 /* ffi_armv7.h in Headers */,
+				A12B113F1CF5342600619066 /* ffitarget_x86_64.h in Headers */,
+				A12B11271CF5342600619066 /* ffi_common.h in Headers */,
+				A12B11351CF5342600619066 /* fficonfig_x86_64.h in Headers */,
+				A12B113B1CF5342600619066 /* ffitarget_armv7.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A12B11041CF5339400619066 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A12B11221CF5342600619066 /* ffi.h in Headers */,
+				A12B11381CF5342600619066 /* ffitarget.h in Headers */,
+				A12B11061CF5339400619066 /* JSNativeAccessor.hpp in Headers */,
+				A12B113E1CF5342600619066 /* ffitarget_i386.h in Headers */,
+				A12B11301CF5342600619066 /* fficonfig_arm64.h in Headers */,
+				A12B11321CF5342600619066 /* fficonfig_armv7.h in Headers */,
+				A12B112E1CF5342600619066 /* fficonfig.h in Headers */,
+				A12B11341CF5342600619066 /* fficonfig_i386.h in Headers */,
+				A12B11241CF5342600619066 /* ffi_arm64.h in Headers */,
+				A12B112A1CF5342600619066 /* ffi_i386.h in Headers */,
+				A12B112C1CF5342600619066 /* ffi_x86_64.h in Headers */,
+				A12B113A1CF5342600619066 /* ffitarget_arm64.h in Headers */,
+				A12B11261CF5342600619066 /* ffi_armv7.h in Headers */,
+				A12B11401CF5342600619066 /* ffitarget_x86_64.h in Headers */,
+				A12B11281CF5342600619066 /* ffi_common.h in Headers */,
+				A12B11361CF5342600619066 /* fficonfig_x86_64.h in Headers */,
+				A12B113C1CF5342600619066 /* ffitarget_armv7.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		A12B10F11CF5338A00619066 /* JSNativeAccessor-Mac */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A12B10FD1CF5338A00619066 /* Build configuration list for PBXNativeTarget "JSNativeAccessor-Mac" */;
+			buildPhases = (
+				A11D83561CF6D1DD0070C622 /* ShellScript */,
+				A12B10EE1CF5338A00619066 /* Sources */,
+				A12B10EF1CF5338A00619066 /* Frameworks */,
+				A12B10F01CF5338A00619066 /* Headers */,
+				A12B11681CF58ABA00619066 /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "JSNativeAccessor-Mac";
+			productName = JSNativeAccessor;
+			productReference = A12B10F21CF5338A00619066 /* libJSNativeAccessor.dylib */;
+			productType = "com.apple.product-type.library.static";
+		};
+		A12B11001CF5339400619066 /* JSNativeAccessor-iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A12B11071CF5339400619066 /* Build configuration list for PBXNativeTarget "JSNativeAccessor-iOS" */;
+			buildPhases = (
+				A12B11011CF5339400619066 /* Sources */,
+				A12B11031CF5339400619066 /* Frameworks */,
+				A12B11041CF5339400619066 /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "JSNativeAccessor-iOS";
+			productName = JSNativeAccessor;
+			productReference = A12B110A1CF5339400619066 /* libJSNativeAccessor-iOS.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+		A12B11481CF536B500619066 /* Accessor */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A12B114D1CF536B500619066 /* Build configuration list for PBXNativeTarget "Accessor" */;
+			buildPhases = (
+				A12B11591CF53C4B00619066 /* ShellScript */,
+				A12B11451CF536B500619066 /* Sources */,
+				A12B11461CF536B500619066 /* Frameworks */,
+				A12B11471CF536B500619066 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A12B11541CF537EE00619066 /* PBXTargetDependency */,
+			);
+			name = Accessor;
+			productName = Accessor;
+			productReference = A12B11491CF536B500619066 /* Accessor */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A12B10EA1CF5338A00619066 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0730;
+				ORGANIZATIONNAME = "程巍巍";
+				TargetAttributes = {
+					A12B10F11CF5338A00619066 = {
+						CreatedOnToolsVersion = 7.3;
+					};
+					A12B11481CF536B500619066 = {
+						CreatedOnToolsVersion = 7.3;
+					};
+				};
+			};
+			buildConfigurationList = A12B10ED1CF5338A00619066 /* Build configuration list for PBXProject "JSNativeAccessor" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = A12B10E91CF5338A00619066;
+			productRefGroup = A12B10F31CF5338A00619066 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A12B10F11CF5338A00619066 /* JSNativeAccessor-Mac */,
+				A12B11001CF5339400619066 /* JSNativeAccessor-iOS */,
+				A12B11481CF536B500619066 /* Accessor */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		A11D83561CF6D1DD0070C622 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "find . | grep .py | xargs python";
+		};
+		A12B11591CF53C4B00619066 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "find ${SRCROOT}/${TARGETNAME} | grep .coffee$ | xargs coffee -o ${BUILT_PRODUCTS_DIR} -c";
+		};
+		A12B11681CF58ABA00619066 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "ln -sf ${SRCROOT}/JSNativeAccessor/libffi/osx/ffi.dylib /usr/local/lib/ffi.dylib";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A12B10EE1CF5338A00619066 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A12B10FA1CF5338A00619066 /* JSNativeAccessor.cpp in Sources */,
+				A11D836F1CF84D330070C622 /* STDC in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A12B11011CF5339400619066 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A12B11021CF5339400619066 /* JSNativeAccessor.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A12B11451CF536B500619066 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A12B114C1CF536B500619066 /* main.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A12B11541CF537EE00619066 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A12B10F11CF5338A00619066 /* JSNativeAccessor-Mac */;
+			targetProxy = A12B11531CF537EE00619066 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		A12B10FB1CF5338A00619066 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		A12B10FC1CF5338A00619066 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		A12B10FE1CF5338A00619066 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_EXTENSION = dylib;
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/JSNativeAccessor/libffi";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/JSNativeAccessor/libffi/osx",
+				);
+				MACH_O_TYPE = mh_dylib;
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				PRODUCT_NAME = JSNativeAccessor;
+			};
+			name = Debug;
+		};
+		A12B10FF1CF5338A00619066 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_EXTENSION = dylib;
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/JSNativeAccessor/libffi";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/JSNativeAccessor/libffi/osx",
+				);
+				MACH_O_TYPE = mh_dylib;
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				PRODUCT_NAME = JSNativeAccessor;
+			};
+			name = Release;
+		};
+		A12B11081CF5339400619066 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/JSNativeAccessor/libffi";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/JSNativeAccessor/libffi/iphone",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		A12B11091CF5339400619066 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/JSNativeAccessor/libffi";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/JSNativeAccessor/libffi/iphone",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+			};
+			name = Release;
+		};
+		A12B114E1CF536B500619066 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/JSNativeAccessor/libffi/include";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/JSNativeAccessor/libffi/osx",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		A12B114F1CF536B500619066 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/JSNativeAccessor/libffi/include";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/JSNativeAccessor/libffi/osx",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A12B10ED1CF5338A00619066 /* Build configuration list for PBXProject "JSNativeAccessor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A12B10FB1CF5338A00619066 /* Debug */,
+				A12B10FC1CF5338A00619066 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A12B10FD1CF5338A00619066 /* Build configuration list for PBXNativeTarget "JSNativeAccessor-Mac" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A12B10FE1CF5338A00619066 /* Debug */,
+				A12B10FF1CF5338A00619066 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A12B11071CF5339400619066 /* Build configuration list for PBXNativeTarget "JSNativeAccessor-iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A12B11081CF5339400619066 /* Debug */,
+				A12B11091CF5339400619066 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A12B114D1CF536B500619066 /* Build configuration list for PBXNativeTarget "Accessor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A12B114E1CF536B500619066 /* Debug */,
+				A12B114F1CF536B500619066 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A12B10EA1CF5338A00619066 /* Project object */;
+}

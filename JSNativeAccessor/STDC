@@ -1,0 +1,250 @@
+//
+//  STDC
+//  JSNativeAccessor
+//
+//  Created by 程巍巍 on 5/27/16.
+//  Copyright © 2016 程巍巍. All rights reserved.
+//
+
+static JSObjectRef GeneratorSTDCInterface(JSContextRef ctx)
+{
+    JSObjectRef stdc = JSObjectMake(ctx, NULL, NULL);
+    
+    // ctype.h
+    JSObjectRef ctype = JSObjectMake(ctx, NULL, NULL);
+#define ICType(fp)  \
+    {   \
+        auto buffer = new Buffer(sizeof(void*));    \
+        auto bytes = (void**)buffer->bytes;         \
+        int (*fn)(int c) = fp;                 \
+        *bytes = (void*)fn;                         \
+        JSStringRef name = JSStringCreateWithUTF8CString("" # fp);   \
+        JSObjectSetProperty(ctx, ctype, name, JSObjectMake(ctx, NBuffer, buffer), kJSPropertyAttributeReadOnly, NULL);  \
+        JSStringRelease(name);  \
+    }
+    
+    ICType(isalnum)
+    ICType(isalpha)
+    ICType(iscntrl)
+    ICType(isdigit)
+    ICType(isgraph)
+    ICType(islower)
+    ICType(isprint)
+    ICType(ispunct)
+    ICType(isspace)
+    ICType(isupper)
+    ICType(isxdigit)
+    
+    JSStringRef ctName = JSStringCreateWithUTF8CString("type");
+    JSObjectSetProperty(ctx, stdc, ctName, ctype, kJSPropertyAttributeReadOnly, NULL);
+    JSStringRelease(ctName);
+#undef ICType
+    
+    // stdio
+    JSObjectRef stdio = JSObjectMake(ctx, NULL, NULL);
+#define IMacro(macro)   \
+    {   \
+        JSValueRef value = JSValueMakeNumber(ctx, macro);   \
+        JSStringRef name = JSStringCreateWithUTF8CString("" # macro);   \
+        JSObjectSetProperty(ctx, stdio, name, value, kJSPropertyAttributeReadOnly, NULL);   \
+        JSStringRelease(name);  \
+    }
+    
+    IMacro(NULL)
+    IMacro(_IOFBF)
+    IMacro(_IOLBF)
+    IMacro(_IONBF)
+    IMacro(BUFSIZ)
+    IMacro(EOF)
+    IMacro(FOPEN_MAX)
+    IMacro(FILENAME_MAX)
+    IMacro(L_tmpnam)
+    IMacro(SEEK_CUR)
+    IMacro(SEEK_END)
+    IMacro(SEEK_SET)
+    IMacro(TMP_MAX)
+#undef IMacro
+    
+#define IPtr(ptr)   \
+    {   \
+        auto buffer = new Buffer(sizeof(void*));    \
+        auto bytes = (void**)buffer->bytes; \
+        *bytes = (void*)(ptr);   \
+        JSStringRef name = JSStringCreateWithUTF8CString("" # ptr);   \
+        JSObjectSetProperty(ctx, stdio, name, JSObjectMake(ctx, NBuffer, buffer), kJSPropertyAttributeReadOnly, NULL);  \
+        JSStringRelease(name);  \
+    }
+    
+    IPtr(stdout)
+    IPtr(stdin)
+    IPtr(stderr)
+    
+    IPtr(clearerr)
+    IPtr(fclose)
+    IPtr(feof)
+    IPtr(ferror)
+    IPtr(fflush)
+    IPtr(fgetpos)
+    IPtr(fopen)
+    IPtr(fread)
+    IPtr(freopen)
+    IPtr(fseek)
+    IPtr(fsetpos)
+    IPtr(ftell)
+    IPtr(fwrite)
+    IPtr(rename)
+    IPtr(rewind)
+    IPtr(setbuf)
+    IPtr(setvbuf)
+    IPtr(tmpfile)
+    IPtr(tmpnam)
+    IPtr(fprintf)
+    IPtr(printf)
+    IPtr(sprintf)
+    IPtr(vfprintf)
+    IPtr(vprintf)
+    IPtr(vsprintf)
+    IPtr(fscanf)
+    IPtr(scanf)
+    IPtr(sscanf)
+    IPtr(fgetc)
+    IPtr(fgets)
+    IPtr(fputc)
+    IPtr(fputs)
+    IPtr(getc)
+    IPtr(getchar)
+    IPtr(gets)
+    IPtr(putc)
+    IPtr(putchar)
+    IPtr(puts)
+    IPtr(ungetc)
+    IPtr(perror)
+    
+    int (*_remove)(const char *) = remove;
+    int (*remove)(const char *) = _remove;
+    IPtr(remove)
+    
+#undef IPtr
+    
+    JSStringRef ioName = JSStringCreateWithUTF8CString("io");
+    JSObjectSetProperty(ctx, stdc, ioName, stdio, kJSPropertyAttributeReadOnly, NULL);
+    JSStringRelease(ioName);
+    
+    // stdlib
+    JSObjectRef stdlib = JSObjectMake(ctx, NULL, NULL);
+    
+#define IMacro(macro)   \
+    {   \
+        JSValueRef value = JSValueMakeNumber(ctx, macro);   \
+        JSStringRef name = JSStringCreateWithUTF8CString("" # macro);   \
+        JSObjectSetProperty(ctx, stdlib, name, value, kJSPropertyAttributeReadOnly, NULL);   \
+        JSStringRelease(name);  \
+    }
+    IMacro(NULL)
+    IMacro(EXIT_FAILURE)
+    IMacro(EXIT_SUCCESS)
+    IMacro(RAND_MAX)
+    IMacro(MB_CUR_MAX)
+#undef IMacro
+    
+#define IPtr(ptr)   \
+    {   \
+        auto buffer = new Buffer(sizeof(void*));    \
+        auto bytes = (void**)buffer->bytes; \
+        *bytes = (void*)(ptr);   \
+        JSStringRef name = JSStringCreateWithUTF8CString("" # ptr);   \
+        JSObjectSetProperty(ctx, stdlib, name, JSObjectMake(ctx, NBuffer, buffer), kJSPropertyAttributeReadOnly, NULL);  \
+        JSStringRelease(name);  \
+    }
+    IPtr(atof)
+    IPtr(atoi)
+    IPtr(atol)
+    IPtr(strtod)
+    IPtr(strtol)
+    IPtr(strtoul)
+    IPtr(calloc)
+    IPtr(free)
+    IPtr(malloc)
+    IPtr(realloc)
+    IPtr(abort)
+    IPtr(atexit)
+    IPtr(exit)
+    IPtr(getenv)
+    IPtr(system)
+    IPtr(bsearch)
+    IPtr(qsort)
+    IPtr(labs)
+    IPtr(ldiv)
+    IPtr(rand)
+    IPtr(srand)
+    IPtr(mblen)
+    IPtr(mbstowcs)
+    IPtr(mbtowc)
+    IPtr(wcstombs)
+    
+    int (*_abs)(int) = abs;
+    int (*abs)(int) = _abs;
+    IPtr(abs)
+    
+    div_t (*_div)(int, int) = div;
+    div_t (*div)(int, int) = _div;
+    IPtr(div)
+    
+#undef IPtr
+    
+    JSStringRef libName = JSStringCreateWithUTF8CString("lib");
+    JSObjectSetProperty(ctx, stdc, libName, stdlib, kJSPropertyAttributeReadOnly, NULL);
+    JSStringRelease(libName);
+
+    // string
+    JSObjectRef stdstring = JSObjectMake(ctx, NULL, NULL);
+#define IPtr(ptr)   \
+    {   \
+        auto buffer = new Buffer(sizeof(void*));    \
+        auto bytes = (void**)buffer->bytes; \
+        *bytes = (void*)(ptr);   \
+        JSStringRef name = JSStringCreateWithUTF8CString("" # ptr);   \
+        JSObjectSetProperty(ctx, stdstring, name, JSObjectMake(ctx, NBuffer, buffer), kJSPropertyAttributeReadOnly, NULL);  \
+        JSStringRelease(name);  \
+    }
+    IPtr(memcmp)
+    IPtr(memcpy)
+    IPtr(memmove)
+    IPtr(memset)
+    IPtr(strcat)
+    IPtr(strncat)
+    IPtr(strcmp)
+    IPtr(strncmp)
+    IPtr(strcoll)
+    IPtr(strcpy)
+    IPtr(strncpy)
+    IPtr(strcspn)
+    IPtr(strerror)
+    IPtr(strlen)
+    IPtr(strspn)
+    IPtr(strtok)
+
+    void *(*_memchr)(const void *, int, size_t)  = memchr;
+    void *(*memchr)(const void *, int, size_t)  = _memchr;
+    IPtr(memchr)
+    char *(*_strchr)(const char *, int)  = strchr;
+    char *(*strchr)(const char *, int)  = _strchr;
+    IPtr(strchr)
+    char *(*_strpbrk)(const char *, const char *)  = strpbrk;
+    char *(*strpbrk)(const char *, const char *)  = _strpbrk;
+    IPtr(strpbrk)
+    char *(*_strrchr)(const char *, int) = strrchr;
+    char *(*strrchr)(const char *, int) = _strrchr;
+    IPtr(strrchr)
+    char *(*_strstr)(const char *, const char *) = strstr;
+    char *(*strstr)(const char *, const char *) = _strstr;
+    IPtr(strstr)
+
+    
+#undef IPtr
+    JSStringRef strName = JSStringCreateWithUTF8CString("string");
+    JSObjectSetProperty(ctx, stdc, strName, stdstring, kJSPropertyAttributeReadOnly, NULL);
+    JSStringRelease(strName);
+    
+    return stdc;
+}
