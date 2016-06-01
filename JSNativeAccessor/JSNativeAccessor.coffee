@@ -60,5 +60,8 @@ do ({Signature, ABI, BuildIn} = FFI)->
     RType: @RType or BuildIn.Void
     ATypes: (T for I, T of @ATypes)
 
+  Signature::__callable__ = ()->
+    console.log '__callable__'
+
 Object.defineProperty JNA, N, value: F for N, F of {Buffer: Buffer, STDC: STDC, FFI: FFI, typedef: typedef}
 this.NativeAccessor = JNA

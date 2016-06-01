@@ -51,14 +51,15 @@ public:
     const unsigned int encoding;
     const size_t length;
     const void* bytes;
-    
+private:
+    void (* const bfree)(void*);
 private:
     bool isSlice = false;
     
 public:
-    Buffer(size_t len, unsigned int ec = BufferEncodingUTF8): length(len), bytes(malloc(len)), encoding(ec) {}
-    Buffer(void* bs, size_t len, unsigned int ec = BufferEncodingUTF8): length(len), bytes(bs), encoding(ec) {isSlice = true;}
-    ~Buffer(){if (bytes != NULL && !isSlice) free((void*)bytes);}
+    Buffer(size_t len, unsigned int ec = BufferEncodingUTF8, void (*bfree)(void*) = free): length(len), bytes(malloc(len)), encoding(ec), bfree(bfree) {}
+    Buffer(void* bs, size_t len, unsigned int ec = BufferEncodingUTF8): length(len), bytes(bs), encoding(ec), bfree(free) {isSlice = true;}
+    ~Buffer(){if (bytes != NULL && !isSlice) bfree((void*)bytes);}
     
 public:
     template<typename T>
@@ -106,7 +107,7 @@ class BuildIn {
 public:
     ffi_type* ft = FT;
     
-private:
+protected:
     static GetProperty(Size)        {auto buildIn = (BuildIn*)JSObjectGetPrivate(object); return JSValueMakeNumber(ctx, buildIn->ft->size);}
     static GetProperty(Alignment)   {auto buildIn = (BuildIn*)JSObjectGetPrivate(object); return JSValueMakeNumber(ctx, buildIn->ft->alignment);}
     static GetProperty(Type)        {auto buildIn = (BuildIn*)JSObjectGetPrivate(object); return JSValueMakeNumber(ctx, buildIn->ft->type);}
@@ -145,6 +146,14 @@ public:
     static JSObjectRef Load(JSContextRef ctx);
 };
 
+class FunctionPointer: public BuildIn<void*, &ffi_type_pointer> {
+public:
+    
+    
+public:
+    
+};
+
 class Signature {
 private:
     ffi_cif* cif = NULL;
@@ -154,8 +163,10 @@ private:
     static void Finalize(JSObjectRef object);
     static CallAsFunction(Func);
     
+    static CallAsConstructor(FunctionPointer);
+    
     // 调用 signature 时，参数会被检测并格式化后，转发到该方法
-    // 该方法的 thisObject 依然为 signature
+    // 该方法的 function 参数为 signature， this 为 Buffer (内容为 c 函数批针)
     static CallAsFunction(Execute);
     
 public:

@@ -837,8 +837,8 @@ JSValueRef BuildIn<void*, &ffi_type_pointer>::CallAsFunction(SetValue)
 {
     // 指针类型的 value 使用 16 进制的 String 表示，并以 0x 开头
     auto buffer = (Buffer*)JSObjectGetPrivate(thisObject);
+    char ptrstr[32] = {};
     if (Buffer::isAsignFrom(buffer) && buffer->length >= sizeof(void*)) {
-        char ptrstr[32] = {};
         if (argumentCount > 0 && JSValueIsString(ctx, arguments[0])) {
             JSStringRef jptrstr = JSValueToStringCopy(ctx, arguments[0], exception);
             if (*exception != NULL) return NULL;
@@ -846,7 +846,7 @@ JSValueRef BuildIn<void*, &ffi_type_pointer>::CallAsFunction(SetValue)
             JSStringRelease(jptrstr);
         }
         
-        unsigned long long ptrVal = strtoull(((char*)buffer)+2, NULL, 16);
+        unsigned long long ptrVal = strtoull(((char*)ptrstr)+2, NULL, 16);
         *(void**)buffer->bytes = (void*)ptrVal;
     }
     return thisObject;
@@ -1106,6 +1106,96 @@ JSObjectRef Struct::Load(JSContextRef ctx)
     return Structure;
 }
 
+// MARK: FunctionPointer ffi_closure
+// FunctionPointer 是 BuildIn 对象 Pointer 的扩展
+// 给 Pointer 对象加上了 __signature__ 属性，同时去除了 setValue 方法
+static void func_ptr_free(void* ptr)
+{
+    void** func_ptr = (void**)ptr;
+    ffi_closure_free(func_ptr[1]);
+    free(ptr);
+}
+
+static void ffi_closure_callback(ffi_cif *, void *rptr, void ** aptr, void * userd)
+{
+    static JSStringRef callable_name = JSStringCreateWithUTF8CString("__callable__");
+    void** ud = (void**)userd;
+    
+    JSGlobalContextRef ctx = (JSGlobalContextRef)ud[2];
+    JSObjectRef fn = (JSObjectRef)ud[3];
+    
+    JSValueRef callable = JSObjectGetProperty(ctx, fn, callable_name, NULL);
+    JSObjectCallAsFunction(ctx, (JSObjectRef)callable, fn, 0, NULL, NULL);
+}
+
+template<>
+JSObjectRef BuildIn<ffi_closure, &ffi_type_pointer>::CallAsConstructor(_)
+{
+    static JSStringRef sig_name = JSStringCreateWithUTF8CString("__signature__");
+    
+    // 提取 signature
+    JSValueRef sigVal = JSObjectGetProperty(ctx, constructor, sig_name, exception);
+    if (*exception != NULL) return NULL;
+    
+    auto signature = (Signature*)JSObjectGetPrivate((JSObjectRef)sigVal);
+    
+    auto buffer = new Buffer(4 * sizeof(void*), BufferEncodingUTF8, func_ptr_free);
+    void** excutor = (void**)buffer->bytes;
+    
+    excutor[1] = ffi_closure_alloc(sizeof(ffi_closure), excutor);
+    
+    auto status = ffi_prep_closure((ffi_closure *)excutor[1], *(ffi_cif**)signature, ffi_closure_callback, excutor);
+    if (status != FFI_OK) {
+        static const char* MSG[] = {"", "FFI_BAD_TYPEDEF", "FFI_BAD_ABI"};
+        JSStringRef msg = JSStringCreateWithUTF8CString(MSG[status]);
+        JSValueRef err = JSValueMakeString(ctx, msg);
+        *exception = JSObjectMakeError(ctx, 1, &err, exception);
+    }
+    
+    JSObjectRef func = JSObjectMake(ctx, NBuffer, buffer);
+    excutor[2] = JSContextGetGlobalContext(ctx);
+    excutor[3] = func;
+    
+    static JSStringRef fp_name = JSStringCreateWithUTF8CString("__FunctionPointer__");
+    JSObjectSetProperty(ctx, func, fp_name, constructor, kJSPropertyAttributeDontEnum | kJSPropertyAttributeReadOnly, exception);
+    if (*exception != NULL) return NULL;
+    
+    static JSStringRef cb_name = JSStringCreateWithUTF8CString("__callback__");
+    if (argumentCount > 0) {
+        JSObjectSetProperty(ctx, func, cb_name, arguments[0], 0, exception);
+    }
+    
+    static JSStringRef callable_name = JSStringCreateWithUTF8CString("__callable__");
+    JSValueRef callable = JSObjectGetProperty(ctx, (JSObjectRef)sigVal, callable_name, exception);
+    if (*exception != NULL) return NULL;
+    JSObjectSetProperty(ctx, func, callable_name, callable, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum, exception);
+    
+    return func;
+}
+
+template<>
+JSObjectRef BuildIn<ffi_closure, &ffi_type_pointer>::Load(JSContextRef ctx, const char *name)
+{
+    JSClassDefinition definition = kJSClassDefinitionEmpty;
+    definition.className = name;
+    JSStaticValue staticValues[] = {
+        {"__size__",        GetSize, NULL, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum},
+        {"__alignment__",   GetAlignment, NULL, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum},
+        {"__type__",        GetType, NULL, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum},
+        {NULL, NULL, NULL, 0}
+    };
+    definition.staticValues = staticValues;
+    definition.callAsFunction = CallConstructor;
+    definition.callAsConstructor = Construct_;
+    definition.finalize = Finalize;
+    definition.parentClass = BuildInClass;
+    JSClassRef Class = JSClassCreate(&definition);
+    auto in = new BuildIn();
+    JSObjectRef In = JSObjectMake(ctx, Class, in);
+    JSClassRelease(Class);
+    return In;
+}
+
 
 // MARK: Signature
 const JSClassRef Signature::Definition = []()->JSClassRef{
@@ -1114,6 +1204,7 @@ const JSClassRef Signature::Definition = []()->JSClassRef{
     definition.finalize = Finalize;
     
     definition.callAsFunction = CallExecute;
+    definition.callAsConstructor = ConstructFunctionPointer;
     
     return JSClassCreate(&definition);
 }();
@@ -1143,6 +1234,23 @@ JSValueRef Signature::CallAsFunction(Execute)
     ffi_call(cif, fn, rvalue, avalue);
     delete [] avalue;
     return NULL;
+}
+
+JSObjectRef Signature::CallAsConstructor(FunctionPointer)
+{
+    // 如果已经为 signature 生成了 FunctionPointer 属性，则直接不需要再次生成
+    static JSStringRef fp_name = JSStringCreateWithUTF8CString("__FunctionPointer__");
+    static JSStringRef sig_name = JSStringCreateWithUTF8CString("__signature__");
+    JSValueRef fp = JSObjectGetProperty(ctx, constructor, fp_name, exception);
+    if (*exception != NULL) return NULL;
+    if (JSValueIsObject(ctx, fp)) return (JSObjectRef)fp;
+    
+    fp = BuildIn<ffi_closure, &ffi_type_pointer>::Load(ctx, "FunctionPointer");
+    
+    JSObjectSetProperty(ctx, constructor, fp_name, fp, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum, exception);
+    JSObjectSetProperty(ctx, (JSObjectRef)fp, sig_name, constructor, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum, exception);
+    
+    return (JSObjectRef)fp;
 }
 
 JSObjectRef Signature::CallAsConstructor(_)

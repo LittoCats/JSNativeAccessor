@@ -262,6 +262,12 @@ constructor = (abi = FFI.ABI.DEFAULT, rtype, ...)->
 `Signature` 实例是一个伪函数对象，因此可以使用 `()` 操作符；因为 `Signature` 
 实例只是描述了参数及返回值类型信息，并没有实现具体的功能，因此不能直接调用，必须将其赋值给函数指针对象，作为其方法调用；下例是调用标准Ｃ中 `isalnum` 的过程
 
+**`Signature` 实例同时也是一人伪构造函数**，可以通过 `new` 操作符新建一个函数指针类型 `FunctionPointer`。
+
+`FunctionPointer` 类型同其它 `BuildIn` 类型类似，可以传入一个 `Function` 对象进行实例化，得到一个函数指针（同 `Pointer` 类型实例），该函数指针可以作为参数传入 `C` 方法做为回调函数。
+
+***注意：*** 因为 `C` 指针可能被传递到一些 `static` 变量或其它一些异步使用的场景中，因此编程中需要注意，必须保证传递给 `C` 函数的所有变量在 `C` 函数使用时没有被 `GC` 回收。
+
 ```coffee
 {isalnum} = STDC.type
 isalnum.call = new Signature FFI.BuildIn.Int, FFI.BuildIn.Int

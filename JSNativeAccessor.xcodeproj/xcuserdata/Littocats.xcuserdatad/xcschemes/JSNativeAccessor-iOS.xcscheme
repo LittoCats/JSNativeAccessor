@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "A12B11001CF5339400619066"
-               BuildableName = "libJSNativeAccessor-iOS.a"
+               BuildableName = "libJSNativeAccessor.a"
                BlueprintName = "JSNativeAccessor-iOS"
                ReferencedContainer = "container:JSNativeAccessor.xcodeproj">
             </BuildableReference>
@@ -46,7 +46,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "A12B11001CF5339400619066"
-            BuildableName = "libJSNativeAccessor-iOS.a"
+            BuildableName = "libJSNativeAccessor.a"
             BlueprintName = "JSNativeAccessor-iOS"
             ReferencedContainer = "container:JSNativeAccessor.xcodeproj">
          </BuildableReference>
@@ -64,7 +64,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "A12B11001CF5339400619066"
-            BuildableName = "libJSNativeAccessor-iOS.a"
+            BuildableName = "libJSNativeAccessor.a"
             BlueprintName = "JSNativeAccessor-iOS"
             ReferencedContainer = "container:JSNativeAccessor.xcodeproj">
          </BuildableReference>
