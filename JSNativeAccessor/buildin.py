@@ -11,7 +11,7 @@ os.chdir(pwd)
 
 # 编译 coffee 文件
 def compile_coffee(src):
-  cmd = "coffee -cpb " + src
+  cmd = "coffee -cpb " + src + " | uglifyjs -m"
   return commands.getoutput(cmd)
 
 def write_file(content, dst):

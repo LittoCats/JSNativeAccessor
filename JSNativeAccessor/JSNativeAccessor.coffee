@@ -27,9 +27,7 @@ typedef = do ({BuildIn, Structure} = FFI)->
           Object.defineProperty field, 'setValue', value: F.__setValue__
           Object.defineProperty instance, N, {
             get: -> field
-            set: (holder = 0)->
-              holder = do holder.getValue if holder instanceof Buffer and holder.getValue
-              F.__setValue__.call field, holder
+            set: (holder = 0)->F.__setValue__.call field, if holder instanceof Buffer and holder.getValue then holder.getValue() else holder
           }
 
         instance[N] = holder[N]
@@ -42,26 +40,31 @@ typedef = do ({BuildIn, Structure} = FFI)->
 
   typedef = (define)->
     return define if define instanceof BuildIn
-    fields = []
-    for N, F of define
-      F = typedef F unless F instanceof BuildIn or F instanceof Structure
-      fields.push [N, F]
+    fields = ([N, if F instanceof BuildIn then F else typedef F] for N, F of define)
 
     argv = ("fields[#{index}][1]" for index in [0...fields.length]).join ', '
     structure = eval "new Structure(#{argv})"
     Object.defineProperty structure, '__fields__', value: fields
     structure[N] = F for [N, F] in fields
     Object.defineProperty structure, 'toJSON', value: toJSON
+
     structure
 
 do ({Signature, ABI, BuildIn} = FFI)->
+  ABI[V] = N for N, V of ABI
   Signature::toJSON = ->
-    ABI: @ABI
+    ABI: ABI[@ABI]
     RType: @RType or BuildIn.Void
     ATypes: (T for I, T of @ATypes)
 
-  Signature::__callable__ = ()->
-    console.log '__callable__'
+  Signature::__callable__ = (rval, argv ...)->
+    try
+      signature = @__FunctionPointer__.__signature__
+      [argv[index].getValue, argv[index].setValue] = [signature.ATypes[index].__getValue__, signature.ATypes[index].__setValue__] for index in [0...argv.length]
+      
+      (signature.RType or BuildIn.Void).__setValue__.call rval, @__callback__.apply {}, argv if typeof @__callback__ is 'function'
+    catch e
+      console.log.e e if typeof console.log.e is 'function'
 
 Object.defineProperty JNA, N, value: F for N, F of {Buffer: Buffer, STDC: STDC, FFI: FFI, typedef: typedef}
 this.NativeAccessor = JNA

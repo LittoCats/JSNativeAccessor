@@ -1116,7 +1116,7 @@ static void func_ptr_free(void* ptr)
     free(ptr);
 }
 
-static void ffi_closure_callback(ffi_cif *, void *rptr, void ** aptr, void * userd)
+static void ffi_closure_callback(ffi_cif *cif, void *rptr, void ** aptr, void * userd)
 {
     static JSStringRef callable_name = JSStringCreateWithUTF8CString("__callable__");
     void** ud = (void**)userd;
@@ -1124,8 +1124,17 @@ static void ffi_closure_callback(ffi_cif *, void *rptr, void ** aptr, void * use
     JSGlobalContextRef ctx = (JSGlobalContextRef)ud[2];
     JSObjectRef fn = (JSObjectRef)ud[3];
     
+    JSValueRef* argv = new JSValueRef[cif->nargs + 1];
+    
+    // return value
+    argv[0] = JSObjectMake(ctx, NBuffer, new Buffer(rptr, cif->rtype->size));
+    for (auto index = 0; index < cif->nargs; index++) {
+        argv[index+1] = JSObjectMake(ctx, NBuffer, new Buffer(aptr[index], cif->arg_types[index]->size));
+    }
+    
     JSValueRef callable = JSObjectGetProperty(ctx, fn, callable_name, NULL);
-    JSObjectCallAsFunction(ctx, (JSObjectRef)callable, fn, 0, NULL, NULL);
+    JSObjectCallAsFunction(ctx, (JSObjectRef)callable, fn, cif->nargs + 1, argv, NULL);
+    delete [] argv;
 }
 
 template<>
