@@ -12,7 +12,7 @@ do ({BuildIn} = FFI)->
     do (N, T)->T.toJSON or T.toJSON = ->N
 
 typedef = do ({BuildIn, Structure} = FFI)->
-  Object.defineProperty Structure::, '__init__', value: do -> __init__ = (instance, holder = {})->
+  Object.defineProperty Structure::, '__init__', value: do -> __init__ = (instance, holder, noHolder = false)->
     offset = 0
     for [N, F] in @__fields__
       do (N, F, field = instance.slice offset, offset + F.__size__)->
@@ -27,12 +27,17 @@ typedef = do ({BuildIn, Structure} = FFI)->
           Object.defineProperty field, 'setValue', value: F.__setValue__
           Object.defineProperty instance, N, {
             get: -> field
-            set: (holder = 0)->F.__setValue__.call field, if holder instanceof Buffer and holder.getValue then holder.getValue() else holder
+            set: (holder = 0)->
+              holder = do holder.getValue if holder instanceof Buffer and holder.getValue
+              F.__setValue__.call field, holder if not noHolder
           }
 
-        instance[N] = holder[N]
+        instance[N] = holder[N] if not noHolder
 
       offset += F.__size__
+
+    # 设置 setValue 方法
+    if @ instanceof Structure then instance.setValue = do (fields = @__fields__)->(holder)-> instance[N] = holder[N] for [N] in fields
 
   toJSON = ->
     (json or json = {})[N] = T for [N, T] in @__fields__
@@ -50,7 +55,7 @@ typedef = do ({BuildIn, Structure} = FFI)->
 
     structure
 
-do ({Signature, ABI, BuildIn} = FFI)->
+do ({Signature, ABI, BuildIn, Structure} = FFI)->
   ABI[V] = N for N, V of ABI
   Signature::toJSON = ->
     ABI: ABI[@ABI]
@@ -60,11 +65,16 @@ do ({Signature, ABI, BuildIn} = FFI)->
   Signature::__callable__ = (rval, argv ...)->
     try
       signature = @__FunctionPointer__.__signature__
-      [argv[index].getValue, argv[index].setValue] = [signature.ATypes[index].__getValue__, signature.ATypes[index].__setValue__] for index in [0...argv.length]
-      
+      for index in [0...argv.length]
+        if signature.ATypes[index] instanceof Structure
+          # 初始化 自定义 Struct 的实例，但忽略 holder，因为参数是传过来的
+          Structure::__init__.call signature.ATypes[index], argv[index], undefined, true
+        else
+          [argv[index].getValue, argv[index].setValue] = [signature.ATypes[index].__getValue__, signature.ATypes[index].__setValue__] 
+
       (signature.RType or BuildIn.Void).__setValue__.call rval, @__callback__.apply {}, argv if typeof @__callback__ is 'function'
     catch e
       console.log.e e if typeof console.log.e is 'function'
 
 Object.defineProperty JNA, N, value: F for N, F of {Buffer: Buffer, STDC: STDC, FFI: FFI, typedef: typedef}
-this.NativeAccessor = JNA
+this.NativeAccessor = this.JSNativeAccessor = this.JNA = JNA
