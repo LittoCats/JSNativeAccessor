@@ -1402,7 +1402,7 @@ const JSClassDefinition JSNativeAccessor::Definition = {
 void JSNativeAccessor::Initialize(JSContextRef ctx, JSObjectRef accessor)
 {
     JSObjectRef buffer = JSObjectMakeConstructor(ctx, NBuffer, Buffer::Construct_);
-    JSObjectRef stdc = GeneratorSTDCInterface(ctx);
+    JSObjectRef stdc = GenerateSTDCInterface(ctx);
     
     JSValueRef *exception = NULL;
     

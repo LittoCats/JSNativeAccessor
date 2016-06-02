@@ -70,30 +70,6 @@ int main(int argc, const char * argv[]) {
     return 0;
 }
 
-static void ffi_closure_callback(ffi_cif *, void *, void **, void *)
-{
-    
-}
-
-typedef void(*FuncPtr)();
-
-static FuncPtr allocFunc()
-{
-    FuncPtr fn = NULL;
-    
-    ffi_cif *cif = (ffi_cif*)malloc(sizeof(ffi_cif));
-    ffi_prep_cif(cif, FFI_DEFAULT_ABI, 0, &ffi_type_void, NULL);
-    
-    ffi_closure* excutor= (ffi_closure*)ffi_closure_alloc(sizeof(ffi_closure), (void**)&fn);
-    ffi_prep_closure(excutor, cif, ffi_closure_callback, NULL);
-    
-    return fn;
-}
-
 static void ffi() {
 
-//    FuncPtr fn = allocFunc();
-//    
-//    echo(fn);
-    
 }

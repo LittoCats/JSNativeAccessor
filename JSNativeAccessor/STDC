@@ -1,12 +1,4 @@
-//
-//  STDC
-//  JSNativeAccessor
-//
-//  Created by 程巍巍 on 5/27/16.
-//  Copyright © 2016 程巍巍. All rights reserved.
-//
-
-static JSObjectRef GeneratorSTDCInterface(JSContextRef ctx)
+static JSObjectRef GenerateSTDCInterface(JSContextRef ctx)
 {
     JSObjectRef stdc = JSObjectMake(ctx, NULL, NULL);
     

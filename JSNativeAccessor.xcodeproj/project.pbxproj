@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A11D836F1CF84D330070C622 /* STDC in Sources */ = {isa = PBXBuildFile; fileRef = A11D836D1CF84D330070C622 /* STDC */; };
 		A12B10F61CF5338A00619066 /* JSNativeAccessor.hpp in Headers */ = {isa = PBXBuildFile; fileRef = A12B10F51CF5338A00619066 /* JSNativeAccessor.hpp */; };
 		A12B10FA1CF5338A00619066 /* JSNativeAccessor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A12B10F91CF5338A00619066 /* JSNativeAccessor.cpp */; };
 		A12B11021CF5339400619066 /* JSNativeAccessor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A12B10F91CF5338A00619066 /* JSNativeAccessor.cpp */; };
@@ -52,7 +51,6 @@
 		A12B11621CF5516100619066 /* libstdc++.6.0.9.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = A12B11611CF5516100619066 /* libstdc++.6.0.9.tbd */; };
 		A12B11631CF582B000619066 /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A12B115D1CF5515500619066 /* JavaScriptCore.framework */; };
 		A12B11641CF58A0900619066 /* ffi.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = A12B11201CF5342600619066 /* ffi.dylib */; };
-		A12B11661CF58A4600619066 /* ffi.dylib.dSYM in Frameworks */ = {isa = PBXBuildFile; fileRef = A12B11561CF53B8400619066 /* ffi.dylib.dSYM */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -132,7 +130,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A12B11661CF58A4600619066 /* ffi.dylib.dSYM in Frameworks */,
 				A12B11621CF5516100619066 /* libstdc++.6.0.9.tbd in Frameworks */,
 				A12B11601CF5515B00619066 /* libc++.tbd in Frameworks */,
 				A12B115E1CF5515500619066 /* JavaScriptCore.framework in Frameworks */,
@@ -436,7 +433,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				A12B10FA1CF5338A00619066 /* JSNativeAccessor.cpp in Sources */,
-				A11D836F1CF84D330070C622 /* STDC in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
