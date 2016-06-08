@@ -21,9 +21,6 @@
 
 #include "JSNativeAccessor.hpp"
 
-extern "C" {
-    const JSClassDefinition* JSNativeAccessor = &JSNativeAccessor::Definition;
-}
 // MARK: Macro
 
 #define GetProperty(name) Get ## name(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception)
@@ -36,6 +33,8 @@ extern "C" {
 
 #define GetPropertyNames(Type) GetPropertyNames ## Type(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef propertyNames)
 
+typedef void(*ScheduleOnJSCThread)(JSGlobalContextRef ctx, void(*)(void*), void*);
+static ScheduleOnJSCThread scheduleOnJSThread = NULL;
 
 static std::string base64_encode(string const& data);
 static std::string base64_decode(std::string const& encoded_string);
@@ -57,7 +56,6 @@ static map<BufferEncoding, const char*> EncodingNameMap = {
 };
 
 static JSClassRef NBuffer = JSClassCreate(&Buffer::Definition);
-
 
 
 // MARK: Buffer
@@ -1163,6 +1161,7 @@ JSObjectRef BuildIn<ffi_closure, &ffi_type_pointer>::CallAsConstructor(_)
     auto buffer = new Buffer(4 * sizeof(void*), BufferEncodingUTF8, func_ptr_free);
     void** excutor = (void**)buffer->bytes;
     
+    // excutor 第一个指针为可执行地址
     excutor[1] = ffi_closure_alloc(sizeof(ffi_closure), excutor);
     
     auto status = ffi_prep_closure((ffi_closure *)excutor[1], *(ffi_cif**)signature, ffi_closure_callback, excutor);
@@ -1237,9 +1236,10 @@ void Signature::Finalize(JSObjectRef object)
 
 JSValueRef Signature::CallAsFunction(Execute)
 {
+    assert(argumentCount == 3);
     // thisObject 为 Buffer 对象，保存了 C 函数指针
     // 第一个参数为 return value 类型为： Buffer
-    // 最后一个参数为 异步回调函数，如果最后一个参数为 undefined ，则进行同步调用，目前仅支持同步调用
+    // 最后一个参数为 异步回调函数，如果最后一个参数为 undefined ，则进行同步调用，如果是 function 则异步调用，但是必须存在
     // 其余参数为 C 函数执行需要的参数 类型为： Buffer
     // 该方法不应该被直接调用，详见文档
     
@@ -1252,8 +1252,71 @@ JSValueRef Signature::CallAsFunction(Execute)
         avalue[index - 1] = (void*)((Buffer*)JSObjectGetPrivate((JSObjectRef)arguments[index]))->bytes;
     }
     
-    ffi_call(cif, fn, rvalue, avalue);
-    delete [] avalue;
+    if (JSValueIsObject(ctx, arguments[2]) && JSObjectIsFunction(ctx, (JSObjectRef)arguments[2])) {
+        struct UserData {
+            const JSGlobalContextRef ctx;
+            const size_t argumentCount;
+            JSValueRef* arguments;
+            ffi_cif* cif;
+            void (*fn)();
+            void* rvalue;
+            void**avalue;
+            
+            UserData(const JSContextRef c, const size_t s, const JSValueRef a[]): ctx(JSContextGetGlobalContext(c)), argumentCount(s) {
+                this->arguments = new JSValueRef[argumentCount];
+                JSGlobalContextRetain(ctx);
+                for (auto index = 0; index < argumentCount; index++) {
+                    JSValueProtect(ctx, a[index]);
+                    arguments[index] = a[index];
+                }
+            }
+            
+            ~UserData() {
+                for (auto index = 0; index < argumentCount; index++) {
+                    JSValueUnprotect(ctx, arguments[index]);
+                }
+                JSGlobalContextRelease(ctx);
+                delete [] arguments;
+            }
+        };
+        
+        shared_ptr<UserData> userd = make_shared<UserData>(ctx, argumentCount, arguments);
+        userd->cif = cif;
+        userd->fn = fn;
+        userd->rvalue = rvalue;
+        userd->avalue = avalue;
+        // 从 globalObject 上获得 JNA 对像
+        static JSStringRef jna_name = JSStringCreateWithUTF8CString("JSNativeAccessor");
+        JSObjectRef JNA = (JSObjectRef)JSObjectGetProperty(ctx, JSContextGetGlobalObject(ctx), jna_name, exception);
+        if (*exception != NULL) return NULL;
+        if (JSValueIsObject(ctx, JNA)) {
+            JSNativeAccessor* accessor = (JSNativeAccessor*)JSObjectGetPrivate(JNA);
+            accessor->threadPool()->AddJob([userd](std::function<bool(void)> isCanceled){
+                if (!isCanceled()){
+                    ffi_call(userd->cif, userd->fn, userd->rvalue, userd->avalue);
+                    if (!isCanceled()) {
+                        if (scheduleOnJSThread != NULL) {
+                            shared_ptr<UserData>* sptr = new shared_ptr<UserData>(userd);
+                            scheduleOnJSThread(userd->ctx, [](void* data){
+                                shared_ptr<UserData> userd = *(shared_ptr<UserData>*)data;
+                                JSObjectCallAsFunction(userd->ctx, (JSObjectRef)userd->arguments[userd->argumentCount-1], NULL, 0, NULL, NULL);
+                                delete (shared_ptr<UserData>*)data;
+                            }, sptr);
+                        }else{
+                            JSObjectCallAsFunction(userd->ctx, (JSObjectRef)userd->arguments[userd->argumentCount-1], NULL, 0, NULL, NULL);
+                        }
+                    }
+                }
+                delete [] userd->avalue;
+            });
+        }
+        
+    }else{
+        
+        ffi_call(cif, fn, rvalue, avalue);
+        delete [] avalue;
+    }
+    
     return NULL;
 }
 
@@ -1401,6 +1464,8 @@ const JSClassDefinition JSNativeAccessor::Definition = {
 
 void JSNativeAccessor::Initialize(JSContextRef ctx, JSObjectRef accessor)
 {
+    JSObjectSetPrivate(accessor, new JSNativeAccessor());
+    
     JSObjectRef buffer = JSObjectMakeConstructor(ctx, NBuffer, Buffer::Construct_);
     JSObjectRef stdc = GenerateSTDCInterface(ctx);
     
@@ -1438,7 +1503,8 @@ void JSNativeAccessor::Initialize(JSContextRef ctx, JSObjectRef accessor)
 
 void JSNativeAccessor::Finalize(JSObjectRef object)
 {
-    
+    auto accessor = (JSNativeAccessor*)JSObjectGetPrivate(object);
+    delete accessor;
 }
 
 const JSStaticValue JSNativeAccessor::StaticValues[] =
@@ -1548,4 +1614,10 @@ static std::string base64_decode(std::string const& encoded_string) {
     }  
     
     return ret;  
+}
+
+
+extern "C" {
+    const JSClassDefinition* JSNativeAccessor = &JSNativeAccessor::Definition;
+    ScheduleOnJSCThread* scheduleOnJSCThread = &scheduleOnJSThread;
 }

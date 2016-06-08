@@ -20,17 +20,23 @@
 #import <Foundation/Foundation.h>
 #import <JavaScriptCore/JavaScriptCore.h>
 
-#import "ffi.h"
-
 static void echo(void(*fn)())
 {
     if (fn != NULL) fn();
 }
 
+typedef void(*ScheduleOnJSCThread)(JSGlobalContextRef ctx, void(*)(void*), void*);
+static void scheduleOnMainThread(JSGlobalContextRef ctx, void(*fn)(void*), void* userd) {
+    fn(userd);
+}
+
 extern JSClassDefinition* JSNativeAccessor;
-static void ffi();
+extern void(**scheduleOnJSCThread)(JSGlobalContextRef ctx, void(*)(void*), void*);
+
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
+        
+        *scheduleOnJSCThread = scheduleOnMainThread;
         
         JSContext *context = [JSContext new];
         context[@"console"][@"log"] = ^(){
@@ -66,10 +72,6 @@ int main(int argc, const char * argv[]) {
         
         [context evaluateScript:script];
     }
-    ffi();
+    
     return 0;
-}
-
-static void ffi() {
-
 }

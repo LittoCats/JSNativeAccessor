@@ -26,7 +26,13 @@
 #include <string>
 #include <map>
 #include <vector>
-
+#include <atomic>
+#include <thread>
+#include <mutex>
+#include <array>
+#include <list>
+#include <functional>
+#include <condition_variable>
 
 #include <JavaScriptCore/JavaScript.h>
 #include "ffi.h"
@@ -112,6 +118,144 @@ public:
     static CallAsConstructor(_);
 };
 
+// MARK: ThreadPool 用于异步任务
+template <unsigned ThreadCount = 8>
+class ThreadPool {
+private:
+    std::array<std::thread, ThreadCount> threads;
+    std::list<std::function<void(std::function<bool(void)>)>> queue;
+    
+    std::atomic_int         jobs_left;
+    std::atomic_bool        bailout;
+    std::atomic_bool        finished;
+    std::atomic_bool        canceled;
+    std::condition_variable job_available_var;
+    std::condition_variable wait_var;
+    std::mutex              wait_mutex;
+    std::mutex              queue_mutex;
+    
+    bool isCanceled() {
+        return canceled;
+    }
+    /**
+     *  Take the next job in the queue and run it.
+     *  Notify the main thread that a job has completed.
+     */
+    void Task(){
+        while (!bailout) {
+            next_job()([this]{return this->isCanceled();});
+            --jobs_left;
+            wait_var.notify_all();
+        }
+    }
+    
+    /**
+     *  Get the next job; pop the first item in the queue,
+     *  otherwise wait for a signal from the main thread.
+     */
+    std::function<void(std::function<bool(void)>)> next_job() {
+        
+        std::function<void(std::function<bool(void)>)> res;
+        std::unique_lock<std::mutex> job_lock( queue_mutex );
+        
+        // Wait for a job if we don't have any.
+        job_available_var.wait( job_lock, [this]() ->bool { return queue.size() || bailout; } );
+        
+        // Get job from the queue
+        if( !bailout ) {
+            res = queue.front();
+            queue.pop_front();
+        }
+        else { // If we're bailing out, 'inject' a job into the queue to keep jobs_left accurate.
+            res = [](std::function<bool(void)>){};
+            ++jobs_left;
+        }
+        return res;
+    }
+    
+public:
+    ThreadPool()
+    : jobs_left( 0 )
+    , bailout(false)
+    , finished(false)
+    , canceled(false)
+    {
+        for( unsigned i = 0; i < ThreadCount; ++i )
+            threads[ i ] = std::move( std::thread( [this,i]{ this->Task(); } ) );
+    }
+    
+    /**
+     * 停此所有线程，并清空所有任务
+     */
+    ~ThreadPool() {
+        canceled = true;
+        JoinAll();
+    }
+    
+    inline unsigned Size() const {
+        return ThreadCount;
+    }
+    
+    inline unsigned JobsRemaining() {
+        std::lock_guard<std::mutex> guard( queue_mutex );
+        return queue.size();
+    }
+    
+    /**
+     *  Add a new job to the pool. If there are no jobs in the queue,
+     *  a thread is woken up to take the job. If all threads are busy,
+     *  the job is added to the end of the queue.
+     */
+    void AddJob( std::function<void(std::function<bool(void)>)> job ){
+        std::lock_guard<std::mutex> guard( queue_mutex );
+        queue.emplace_back( job );
+        ++jobs_left;
+        job_available_var.notify_one();
+    }
+    
+    /**
+     *  Join with all threads. Block until all threads have completed.
+     *  Params: WaitForAll: If true, will wait for the queue to empty
+     *          before joining with threads. If false, will complete
+     *          current jobs, then inform the threads to exit.
+     *  The queue will be empty after this call, and the threads will
+     *  be done. After invoking `ThreadPool::JoinAll`, the pool can no
+     *  longer be used. If you need the pool to exist past completion
+     *  of jobs, look to use `ThreadPool::WaitAll`.
+     */
+    void JoinAll( bool WaitForAll = true ) {
+        if( !finished ) {
+            if( WaitForAll ) {
+                WaitAll();
+            }
+            
+            // note that we're done, and wake up any thread that's
+            // waiting for a new job
+            bailout = true;
+            job_available_var.notify_all();
+            
+            for( auto &x : threads )
+                if( x.joinable() )
+                    x.join();
+            finished = true;
+        }
+    }
+    
+    /**
+     *  Wait for the pool to empty before continuing.
+     *  This does not call `std::thread::join`, it only waits until
+     *  all jobs have finshed executing.
+     */
+    void WaitAll() {
+        if( jobs_left > 0 ) {
+            std::unique_lock<std::mutex> lk( wait_mutex );
+            wait_var.wait( lk, [this]{ return this->jobs_left == 0; } );
+            lk.unlock();
+        }
+    }
+};
+
+
 // MARK: libffi
 template<typename T, ffi_type* FT>
 class BuildIn {
@@ -157,13 +301,6 @@ public:
     static JSObjectRef Load(JSContextRef ctx);
 };
 
-class FunctionPointer: public BuildIn<void*, &ffi_type_pointer> {
-public:
-    
-    
-public:
-    
-};
 
 class Signature {
 private:
@@ -187,6 +324,11 @@ public:
 
 // MARK: NativeAccessor
 class JSNativeAccessor {
+private:
+    ThreadPool<> _threadPool;
+    
+public:
+    ThreadPool<>* threadPool() {return &_threadPool;}
     
 public:
     static void Initialize(JSContextRef ctx, JSObjectRef object);

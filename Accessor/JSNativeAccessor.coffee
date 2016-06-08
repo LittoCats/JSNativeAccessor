@@ -43,14 +43,25 @@ Echo.setValue(echo)
 Echo.call = new FFI.Signature FFI.BuildIn.Void, Callback
 
 Echo.call new FFI.BuildIn.Void, cb, ->
+  console.log 'call c function async'
 
 # console.log JSON.stringify ("#{key}": (key for key of val) for key, val of STDC), null, 2
-print = do ({printf} = STDC.io, {Signature, BuildIn} = FFI, cb = ->)->
+
+print = do ({printf} = STDC.io, {Signature, BuildIn} = FFI)->
   printf.call = new Signature BuildIn.Void, BuildIn.Pointer
-  return (args ...)->
+  rv = new BuildIn.Void
+  print = (args ...)->
     content = (JSON.stringify arg, null, 2 for arg in args).join(',') + '\n'
-    rv = new BuildIn.Void
+    av = new BuildIn.Pointer new Buffer(content)
+    printf.call rv, av, undefined
+  print.async = (args ..., cb)->
+    content = (JSON.stringify arg, null, 2 for arg in args).join(',') + '\n'
     av = new BuildIn.Pointer new Buffer(content)
     printf.call rv, av, cb
 
+  print
+
+
+print.async 'log message from c printf as async call', ->
+  console.log "print done."
 print 'log message from c printf'
