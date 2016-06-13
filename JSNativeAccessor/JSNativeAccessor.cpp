@@ -792,6 +792,92 @@ JSObjectRef Buffer::CallAsConstructor(_)
 
 // MARK: ffi
 static JSClassRef BuildInClass = JSClassCreate(&kJSClassDefinitionEmpty);
+
+// 特化 Void 对象
+template<>
+JSValueRef BuildIn<void, &ffi_type_void>::CallAsFunction(GetValue) {return JSValueMakeUndefined(ctx);}
+template<>
+JSValueRef BuildIn<void, &ffi_type_void>::CallAsFunction(SetValue) {return thisObject;}
+template<>
+JSObjectRef BuildIn<void, &ffi_type_void>::CallAsConstructor(_){return JSObjectMake(ctx, NBuffer, new Buffer(0));}
+
+// 特化 Pointer(void*) 对象
+template<>
+JSValueRef BuildIn<void*, &ffi_type_pointer>::CallAsFunction(GetValue){return JSValueMakeUndefined(ctx);}
+template<>
+JSValueRef BuildIn<void*, &ffi_type_pointer>::CallAsFunction(SetValue){return thisObject;}
+
+
+static void BuildIn_Pointer_Destory(void* bytes) {
+    if (((void**)bytes)[1] != NULL && ((void**)bytes)[0] != NULL) {
+        ((void(*)(void*))((void**)bytes)[1])(((void**)bytes)[0]);
+    }
+    free(bytes);
+}
+template<>
+JSObjectRef BuildIn<void*, &ffi_type_pointer>::CallAsConstructor(_)
+{
+    void* ptr = NULL;
+    void* bfree = NULL;
+    auto buffer = new Buffer(sizeof(void*)*2, BufferEncodingUTF8, BuildIn_Pointer_Destory);
+    auto obj = JSObjectMake(ctx, JSClass, buffer);
+    
+    if (argumentCount > 0) {
+        // Pointer 构造函数的参数可以是一个 printf("%p", ptr) 打印的地址
+        if (JSValueIsString(ctx, arguments[0])) {
+            char ptrstr[32] = {};
+            JSStringRef jptrstr = JSValueToStringCopy(ctx, arguments[0], exception);
+            if (*exception != NULL) return NULL;
+            JSStringGetUTF8CString(jptrstr, ptrstr, 32);
+            JSStringRelease(jptrstr);
+            unsigned long long ptrVal = strtoull(((char*)ptrstr)+2, NULL, 16);
+            
+            ptr = (void*)ptrVal;
+        }else
+        // Pointer 构造函数的参数是 Buffer，因为只有 Buffer 是 Ｃ 类型的数据，才能构造出指针
+        if (JSValueIsObject(ctx, arguments[0])) {
+            auto buffer = (Buffer*)JSObjectGetPrivate((JSObjectRef)arguments[0]);
+            if (Buffer::isAsignFrom(buffer)) {
+                ptr = (void*)buffer->bytes;
+                static JSStringRef name = JSStringCreateWithUTF8CString("__buffer__");
+                JSObjectSetProperty(ctx, obj, name, arguments[0], kJSPropertyAttributeReadOnly, NULL);
+            }
+        }
+    }
+    
+    if (argumentCount > 1 && JSValueIsObject(ctx, arguments[1])) {
+        // 第二个参数为 第一个参数（指针）的释放方法，必须为 Buffer, 如果不是，则忽略
+        auto buffer = (Buffer*)JSObjectGetPrivate((JSObjectRef)arguments[0]);
+        if (Buffer::isAsignFrom(buffer)) {
+            bfree = *(void**)buffer->bytes;
+        }
+    }
+    
+    ((void**)buffer->bytes)[0] = ptr;
+    ((void**)buffer->bytes)[1] = bfree;
+    
+    return obj;
+}
+
+// 泛化基本数值类型
+
+// 继承 Buffer 的 JSClass(NBuffer)，这里需要特别注意的是，必需设制 Finalize 方法，因为 finalize 方法无法从 NBuffer 类继承过来
+template<typename T, ffi_type* FT>
+JSClassRef BuildIn<T, FT>::JSClass = []()->JSClassRef{
+    JSClassDefinition definition = kJSClassDefinitionEmpty;
+    definition.className = "BuildIn";
+    definition.parentClass = NBuffer;
+    definition.finalize = Buffer::Finalize;
+    JSStaticFunction staticFunctions[] = {
+        {"setValue", CallSetValue, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum},
+        {"getValue", CallGetValue, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum},
+        {NULL, NULL, 0}
+    };
+    definition.staticFunctions = staticFunctions;
+    
+    return JSClassCreate(&definition);
+}();
+
 template<typename T, ffi_type* FT>
 JSValueRef BuildIn<T, FT>::CallAsFunction(GetValue)
 {
@@ -801,28 +887,6 @@ JSValueRef BuildIn<T, FT>::CallAsFunction(GetValue)
         return JSValueMakeNumber(ctx, number);
     }
     return JSValueMakeNumber(ctx, NAN);
-}
-
-template<>
-JSValueRef BuildIn<void, &ffi_type_void>::CallAsFunction(GetValue) {return JSValueMakeUndefined(ctx);}
-
-template<>
-JSValueRef BuildIn<void*, &ffi_type_pointer>::CallAsFunction(GetValue)
-{
-    // 指针类型的 value 使用 16 进制的 String 表示，并以 0x 开头
-    auto buffer = (Buffer*)JSObjectGetPrivate(thisObject);
-    if (Buffer::isAsignFrom(buffer) && buffer->length >= sizeof(void*)) {
-        void* ptr = *(void**)buffer->bytes;
-        char buffer[32];
-        sprintf(buffer, "%p", ptr);
-        string ptrstr(buffer);
-        transform(ptrstr.begin(), ptrstr.end(), ptrstr.begin(), ::tolower);
-        JSStringRef jptrstr = JSStringCreateWithUTF8CString(ptrstr.c_str());
-        JSValueRef ptrval = JSValueMakeString(ctx, jptrstr);
-        JSStringRelease(jptrstr);
-        return ptrval;
-    }
-    return NULL;
 }
 
 template<typename T, ffi_type* FT>
@@ -839,39 +903,12 @@ JSValueRef BuildIn<T, FT>::CallAsFunction(SetValue)
     return thisObject;
 }
 
-template<>
-JSValueRef BuildIn<void, &ffi_type_void>::CallAsFunction(SetValue) {return thisObject;}
-
-template<>
-JSValueRef BuildIn<void*, &ffi_type_pointer>::CallAsFunction(SetValue)
-{
-    // 指针类型的 value 使用 16 进制的 String 表示，并以 0x 开头
-    auto buffer = (Buffer*)JSObjectGetPrivate(thisObject);
-    char ptrstr[32] = {};
-    if (Buffer::isAsignFrom(buffer) && buffer->length >= sizeof(void*)) {
-        if (argumentCount > 0 && JSValueIsString(ctx, arguments[0])) {
-            JSStringRef jptrstr = JSValueToStringCopy(ctx, arguments[0], exception);
-            if (*exception != NULL) return NULL;
-            JSStringGetUTF8CString(jptrstr, ptrstr, 32);
-            JSStringRelease(jptrstr);
-        }
-        
-        unsigned long long ptrVal = strtoull(((char*)ptrstr)+2, NULL, 16);
-        *(void**)buffer->bytes = (void*)ptrVal;
-    }
-    return thisObject;
-}
-
-
 template<typename T, ffi_type* FT>
 JSObjectRef BuildIn<T, FT>::CallAsConstructor(_)
 {
     T number = 0;
     
     static JSStringRef getValueName = JSStringCreateWithUTF8CString("getValue");
-    static JSStringRef setValueName = JSStringCreateWithUTF8CString("setValue");
-    static JSStringRef _getValueName = JSStringCreateWithUTF8CString("__getValue__");
-    static JSStringRef _setValueName = JSStringCreateWithUTF8CString("__setValue__");
     
     if (argumentCount > 0) {
         if (JSValueIsObject(ctx, arguments[0])) {
@@ -893,56 +930,9 @@ JSObjectRef BuildIn<T, FT>::CallAsConstructor(_)
     
     auto buffer = new Buffer(sizeof(T));
     *((T*)buffer->bytes) = number;
-    auto N = JSObjectMake(ctx, NBuffer, buffer);
-    
-    JSValueRef getValue = JSObjectGetProperty(ctx, constructor, _getValueName, exception);
-    JSObjectSetProperty(ctx, N, getValueName, getValue, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum, exception);
-    
-    JSValueRef setValue = JSObjectGetProperty(ctx, constructor, _setValueName, exception);
-    JSObjectSetProperty(ctx, N, setValueName, setValue, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum, exception);
+    auto N = JSObjectMake(ctx, JSClass, buffer);
     
     return N;
-}
-
-template<>
-JSObjectRef BuildIn<void, &ffi_type_void>::CallAsConstructor(_)
-{
-    return JSObjectMake(ctx, NBuffer, new Buffer(0));
-}
-
-template<>
-JSObjectRef BuildIn<void*, &ffi_type_pointer>::CallAsConstructor(_)
-{
-    static JSStringRef getValueName = JSStringCreateWithUTF8CString("getValue");
-    static JSStringRef setValueName = JSStringCreateWithUTF8CString("setValue");
-    static JSStringRef _getValueName = JSStringCreateWithUTF8CString("__getValue__");
-    static JSStringRef _setValueName = JSStringCreateWithUTF8CString("__setValue__");
-    
-    void* ptr = NULL;
-    auto buffer = new Buffer(sizeof(void*));
-    auto obj = JSObjectMake(ctx, NBuffer, buffer);
-    
-    JSValueRef getValue = JSObjectGetProperty(ctx, constructor, _getValueName, exception);
-    JSObjectSetProperty(ctx, obj, getValueName, getValue, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum, exception);
-    
-    JSValueRef setValue = JSObjectGetProperty(ctx, constructor, _setValueName, exception);
-    JSObjectSetProperty(ctx, obj, setValueName, setValue, kJSPropertyAttributeReadOnly | kJSPropertyAttributeDontEnum, exception);
-    
-    if (argumentCount > 0) {
-        // Pointer 构造函数的参数必须是 Buffer，因为只有 Buffer 是 Ｃ 类型的数据，才能构造出指针
-        if (JSValueIsObject(ctx, arguments[0])) {
-            auto buffer = (Buffer*)JSObjectGetPrivate((JSObjectRef)arguments[0]);
-            if (Buffer::isAsignFrom(buffer)) {
-                ptr = (void*)buffer->bytes;
-                static JSStringRef name = JSStringCreateWithUTF8CString("__buffer__");
-                JSObjectSetProperty(ctx, obj, name, arguments[0], kJSPropertyAttributeReadOnly, exception);
-            }
-        }
-    }
-    
-    *(void**)buffer->bytes = ptr;
-    
-    return obj;
 }
 
 template<typename T, ffi_type* FT>
@@ -972,6 +962,7 @@ JSObjectRef BuildIn<T, FT>::Load(JSContextRef ctx, const char* name)
     auto in = new BuildIn();
     JSObjectRef In = JSObjectMake(ctx, Class, in);
     JSClassRelease(Class);
+    
     return In;
 }
 
@@ -986,8 +977,25 @@ static JSObjectRef LoadBuildIn(JSContextRef ctx)
     
 #define ImportBuildIn(N, T, FT) BuildIn<T, &FT>::Load(ctx, "" # N)
     
-    JSValueRef UT[8] = {ImportBuildIn(UInt8, uint8_t, ffi_type_uint8), ImportBuildIn(UInt16, uint16_t, ffi_type_uint16), NULL, ImportBuildIn(UInt32, uint32_t, ffi_type_uint32), NULL, NULL, NULL, ImportBuildIn(UInt64, uint64_t, ffi_type_uint64)};
-    JSValueRef ST[8] = {ImportBuildIn(Int8, int8_t, ffi_type_sint8), ImportBuildIn(Int16, int16_t, ffi_type_sint16), NULL, ImportBuildIn(Int32, int32_t, ffi_type_sint32), NULL, NULL, NULL, ImportBuildIn(Int64, int64_t, ffi_type_sint64)};
+    JSValueRef UT[8] = {
+        ImportBuildIn(UInt8, uint8_t, ffi_type_uint8),
+        ImportBuildIn(UInt16, uint16_t, ffi_type_uint16),
+        NULL,
+        ImportBuildIn(UInt32, uint32_t, ffi_type_uint32),
+        NULL,
+        NULL,
+        NULL,
+        ImportBuildIn(UInt64, uint64_t, ffi_type_uint64)
+    };
+    JSValueRef ST[8] = {
+        ImportBuildIn(Int8, int8_t, ffi_type_sint8),
+        ImportBuildIn(Int16, int16_t, ffi_type_sint16),
+        NULL,
+        ImportBuildIn(Int32, int32_t, ffi_type_sint32),
+        NULL,
+        NULL, NULL,
+        ImportBuildIn(Int64, int64_t, ffi_type_sint64)
+    };
     
 #undef ImportBuildIn
     

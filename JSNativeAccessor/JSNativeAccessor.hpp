@@ -70,13 +70,11 @@ public:
     const void* bytes;
 private:
     void (* const bfree)(void*);
-private:
-    bool isSlice = false;
     
 public:
-    Buffer(size_t len, unsigned int ec = BufferEncodingUTF8, void (*bfree)(void*) = free): length(len), bytes(malloc(len)), encoding(ec), bfree(bfree) {}
-    Buffer(void* bs, size_t len, unsigned int ec = BufferEncodingUTF8): length(len), bytes(bs), encoding(ec), bfree(free) {isSlice = true;}
-    ~Buffer(){if (bytes != NULL && !isSlice) bfree((void*)bytes);}
+    Buffer(size_t len, unsigned int ec = BufferEncodingUTF8, void (*bfree)(void*) = free): length(len), bytes(len > 0 ? malloc(len) : NULL), encoding(ec), bfree(bfree) {}
+    Buffer(void* bs, size_t len, unsigned int ec = BufferEncodingUTF8, void (*bfree)(void*) = NULL): length(len), bytes(bs), encoding(ec), bfree(bfree) {}
+    ~Buffer(){if (bytes != NULL && bfree != NULL) bfree((void*)bytes);}
     
 public:
     template<typename T>
@@ -85,8 +83,9 @@ public:
         return data != NULL && data != nullptr && *(void**)data == &Definition;
     }
     
-private:
+public:
     static void Finalize(JSObjectRef object);
+private:
     static CallAsFunction(Compare);
     static CallAsFunction(Copy);
     static CallAsFunction(Equals);
@@ -96,6 +95,7 @@ private:
     static CallAsFunction(Slice);
     static CallAsFunction(ToString);
     
+private:
     template<typename NumType>
     static CallAsFunction(WriteNum);
     
@@ -277,6 +277,7 @@ protected:
     static CallAsFunction(SetValue);
     
 public:
+    static JSClassRef JSClass;
     static JSObjectRef Load(JSContextRef ctx, const char* name);
 };
 

@@ -37,8 +37,8 @@ Callback = new sig
 
 cb = new Callback ->console.log 'JavaScript Function for C Method from JavaScript'
 
-Echo = new FFI.BuildIn.Pointer()
-Echo.setValue(echo)
+Echo = new FFI.BuildIn.Pointer echo
+# Echo.setValue echo
 
 Echo.call = new FFI.Signature FFI.BuildIn.Void, Callback
 
@@ -65,3 +65,15 @@ print = do ({printf} = STDC.io, {Signature, BuildIn} = FFI)->
 print.async 'log message from c printf as async call', ->
   console.log "print done."
 print 'log message from c printf'
+
+current_second = new Date().getTime()
+
+count = 1000000
+{Pointer, Void, Int} = FFI.BuildIn
+
+console.log new Int(100).getValue()
+
+while count--
+  new Int 128
+
+print "#{new Date().getTime() - current_second}"
