@@ -61,7 +61,7 @@ static JSClassRef NBuffer = JSClassCreate(&Buffer::Definition);
 // MARK: Buffer
 const JSClassDefinition Buffer::Definition = {
     .version                = JSNativeAccessorVersion,
-    .className              = "JSNativeAccessor",
+    .className              = "Buffer",
     .finalize               = Finalize,
     
     .getProperty            = GetByteAtIndex,
@@ -281,7 +281,7 @@ JSValueRef Buffer::CallAsFunction(Fill)
     if (JSValueIsString(ctx, arguments[0])) {
         JSStringRef numStr = JSValueToStringCopy(ctx, arguments[0], exception);
         if (*exception == NULL) {
-            char buf[2];
+            char buf[2] = {};
             JSStringGetUTF8CString(numStr, buf, 2);
             JSStringRelease(numStr);
             value = (uint8_t)buf[0];
@@ -394,10 +394,12 @@ JSValueRef Buffer::CallAsFunction(Write)
     }else if (en == BufferEncodingBase64) {
         content = base64_decode(content);
         len = content.size();
+    }else{
+        len -= 1;
     }
     
     uint8_t* bytes = (uint8_t*)buffer->bytes;
-    memcpy(bytes+offset, content.data(), min(length, content.size()));
+    memcpy(bytes+offset, content.data(), min(length, len));
     
     return thisObject;
 }
@@ -558,10 +560,22 @@ JSValueRef Buffer::GetProperty(ByteAtIndex)
     
     ssize_t index = 0;
     {
-        JSValueRef exception = NULL;
-        double num = JSValueToNumber(ctx, JSValueMakeString(ctx, propertyName), &exception);
-        if (exception != NULL || isnan(num)) return NULL;
-        index = num;
+        // 如果 propertyName 的字符不是 0~9 开头，则表示不是一个有效的 index，返回 NULL，引擎按正常的 Object 属性取值
+        const JSChar* chars = JSStringGetCharactersPtr(propertyName);
+        size_t length = JSStringGetLength(propertyName);
+        char* buffer = new char[length];
+        
+        JSChar c;
+        for (size_t index = 0; index < length; index++) {
+            c = chars[index];
+            if ((c > '9' || c < '0') && c != '-') {
+                delete [] buffer;
+                return NULL;
+            }
+            buffer[index] = (char)c;
+        }
+        index = strtol(buffer, NULL, 10);
+        delete [] buffer;
     }
     
     if (index < 0) index += buffer->length; // 如果索引为 负，则表示从结尾查找
@@ -585,10 +599,22 @@ bool Buffer::SetProperty(ByteAtIndex)
     
     ssize_t index = 0;
     {
-        JSValueRef exception = NULL;
-        double num = JSValueToNumber(ctx, JSValueMakeString(ctx, propertyName), &exception);
-        if (exception != NULL || isnan(num)) return NULL;
-        index = num;
+        // 如果 propertyName 的字符不是 0~9 开头，则表示不是一个有效的 index，返回 NULL，引擎按正常的 Object 属性取值
+        const JSChar* chars = JSStringGetCharactersPtr(propertyName);
+        size_t length = JSStringGetLength(propertyName);
+        char* buffer = new char[length];
+        
+        JSChar c;
+        for (size_t index = 0; index < length; index++) {
+            c = chars[index];
+            if ((c > '9' || c < '0') && c != '-') {
+                delete [] buffer;
+                return NULL;
+            }
+            buffer[index] = (char)c;
+        }
+        index = strtol(buffer, NULL, 10);
+        delete [] buffer;
     }
     
     if (index < 0) index += buffer->length; // 如果索引为 负，则表示从结尾查找
@@ -681,7 +707,6 @@ JSObjectRef Buffer::CallAsConstructor(_)
     
     // new Buffer(str[,encoding])
     if (JSValueIsString(ctx, arguments[0])) {
-        // 暂时只支持 UTF-8 编码
         JSStringRef str = JSValueToStringCopy(ctx, arguments[0], exception);
         if (*exception != NULL) return NULL;
         size_t len = JSStringGetMaximumUTF8CStringSize(str);
@@ -734,6 +759,9 @@ JSObjectRef Buffer::CallAsConstructor(_)
         }else if (en == BufferEncodingBase64) {
             content = base64_decode(content);
             len = content.size();
+        }else if (en == BufferEncodingUTF8) {
+            // 如果是基本的 UTF8 字符串，最后一个字符是占位标识 \0，需要去除
+            len -= 1;
         }
         
         Buffer* buffer = new Buffer(len);
@@ -823,8 +851,13 @@ JSObjectRef BuildIn<void*, &ffi_type_pointer>::CallAsConstructor(_)
     auto obj = JSObjectMake(ctx, JSClass, buffer);
     
     if (argumentCount > 0) {
+        JSType type = JSValueGetType(ctx, arguments[0]);
+        if (type == kJSTypeNumber) {
+            long long ptrVal = (long long)JSValueToNumber(ctx, arguments[0], NULL);
+            ptr = (void*)ptrVal;
+        }else
         // Pointer 构造函数的参数可以是一个 printf("%p", ptr) 打印的地址
-        if (JSValueIsString(ctx, arguments[0])) {
+        if (type == kJSTypeString) {
             char ptrstr[32] = {};
             JSStringRef jptrstr = JSValueToStringCopy(ctx, arguments[0], exception);
             if (*exception != NULL) return NULL;
@@ -835,7 +868,7 @@ JSObjectRef BuildIn<void*, &ffi_type_pointer>::CallAsConstructor(_)
             ptr = (void*)ptrVal;
         }else
         // Pointer 构造函数的参数是 Buffer，因为只有 Buffer 是 Ｃ 类型的数据，才能构造出指针
-        if (JSValueIsObject(ctx, arguments[0])) {
+        if (type == kJSTypeObject) {
             auto buffer = (Buffer*)JSObjectGetPrivate((JSObjectRef)arguments[0]);
             if (Buffer::isAsignFrom(buffer)) {
                 ptr = (void*)buffer->bytes;
@@ -1320,7 +1353,6 @@ JSValueRef Signature::CallAsFunction(Execute)
         }
         
     }else{
-        
         ffi_call(cif, fn, rvalue, avalue);
         delete [] avalue;
     }

@@ -69,6 +69,9 @@ int main(int argc, const char * argv[]) {
         NSString* script = [NSString stringWithContentsOfFile:@"./JSNativeAccessor.js" encoding:NSUTF8StringEncoding error:nil];
         
         context[@"echo"] = [NSString stringWithFormat:@"%p", echo];
+        context[@"echo"] = @((long long)echo);
+        long long echoPtr = context[@"echo"].toNumber.doubleValue;
+        NSLog(@"%p    %p", echo, (void*)echoPtr);
         
         [context evaluateScript:script];
     }

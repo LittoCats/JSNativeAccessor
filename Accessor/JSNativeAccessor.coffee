@@ -45,20 +45,20 @@ Echo.call = new FFI.Signature FFI.BuildIn.Void, Callback
 Echo.call new FFI.BuildIn.Void, cb, ->
   console.log 'call c function async'
 
+console.log "long long #{FFI.BuildIn.LongLong.__size__}"
+console.log "long long #{FFI.BuildIn.Double.__size__}"
+
 # console.log JSON.stringify ("#{key}": (key for key of val) for key, val of STDC), null, 2
 
 print = do ({printf} = STDC.io, {Signature, BuildIn} = FFI)->
   printf.call = new Signature BuildIn.Void, BuildIn.Pointer
   rv = new BuildIn.Void
-  print = (args ...)->
-    content = (JSON.stringify arg, null, 2 for arg in args).join(',') + '\n'
-    av = new BuildIn.Pointer new Buffer(content)
-    printf.call rv, av, undefined
-  print.async = (args ..., cb)->
-    content = (JSON.stringify arg, null, 2 for arg in args).join(',') + '\n'
+  async = (args ..., cb)->
+    content = (arg.toString() for arg in args).join(',') + '\n'
     av = new BuildIn.Pointer new Buffer(content)
     printf.call rv, av, cb
-
+  print = (args ...)->async.apply @, (args.push(undefined); args)
+  print.async = async
   print
 
 
@@ -66,14 +66,24 @@ print.async 'log message from c printf as async call', ->
   console.log "print done."
 print 'log message from c printf'
 
+buffer = new Buffer 'EFAC', 'hex'
+console.log buffer.length
+
 current_second = new Date().getTime()
 
 count = 1000000
-{Pointer, Void, Int} = FFI.BuildIn
+{Pointer, Void, Int, UInt8} = FFI.BuildIn
 
-console.log new Int(100).getValue()
+int = new UInt8(100)
+console.log int.getValue()
+int.setValue 255
+console.log int.getValue()
 
 while count--
-  new Int 128
+  # new UInt8 count
+  # buffer = new Buffer
+  # pointer = new Pointer buffer
+  # pointer.__buffer__ = buffer
+  new Pointer new Buffer
 
 print "#{new Date().getTime() - current_second}"
