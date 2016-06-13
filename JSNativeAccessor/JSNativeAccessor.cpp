@@ -831,9 +831,76 @@ JSObjectRef BuildIn<void, &ffi_type_void>::CallAsConstructor(_){return JSObjectM
 
 // 特化 Pointer(void*) 对象
 template<>
-JSValueRef BuildIn<void*, &ffi_type_pointer>::CallAsFunction(GetValue){return JSValueMakeUndefined(ctx);}
+JSValueRef BuildIn<void*, &ffi_type_pointer>::CallAsFunction(GetValue){
+    auto buffer = (Buffer*)JSObjectGetPrivate(thisObject);
+    if (Buffer::isAsignFrom(buffer)) {
+        char buf[32] = {};
+        sprintf(buf, "%p", *(void**)buffer->bytes);
+        JSStringRef jval = JSStringCreateWithUTF8CString(buf);
+        JSValueRef value = JSValueMakeString(ctx, jval);
+        JSStringRelease(jval);
+        return value;
+    }
+    return JSValueMakeUndefined(ctx);
+}
 template<>
-JSValueRef BuildIn<void*, &ffi_type_pointer>::CallAsFunction(SetValue){return thisObject;}
+JSValueRef BuildIn<void*, &ffi_type_pointer>::CallAsFunction(SetValue){
+    // 有三种情况：
+    // Number 一个 void* 等效的 long long 值
+    // String sprintf 获得的字符串
+    // Buffer
+    
+    // // 第二个参数为 第一个参数（指针）的释放方法，必须为 Buffer, 如果不是，则忽略
+    
+    auto buffer = (Buffer*)JSObjectGetPrivate(thisObject);
+    if (Buffer::isAsignFrom(buffer)) {
+        void* ptr = NULL;
+        void* bfree = NULL;
+        static JSStringRef bufferPName = JSStringCreateWithUTF8CString("__buffer__");
+        if (argumentCount > 0) {
+            JSType type = JSValueGetType(ctx, arguments[0]);
+            JSObjectDeleteProperty(ctx, thisObject, bufferPName, NULL);
+            if (type == kJSTypeNumber) {
+                long long ptrVal = (long long)JSValueToNumber(ctx, arguments[0], NULL);
+                ptr = (void*)ptrVal;
+            }else
+                // Pointer 构造函数的参数可以是一个 printf("%p", ptr) 打印的地址
+                if (type == kJSTypeString) {
+                    char ptrstr[32] = {};
+                    JSStringRef jptrstr = JSValueToStringCopy(ctx, arguments[0], exception);
+                    if (*exception != NULL) return NULL;
+                    JSStringGetUTF8CString(jptrstr, ptrstr, 32);
+                    JSStringRelease(jptrstr);
+                    unsigned long long ptrVal = strtoull(((char*)ptrstr)+2, NULL, 16);
+                    
+                    ptr = (void*)ptrVal;
+                }else
+                    // Pointer 构造函数的参数是 Buffer，因为只有 Buffer 是 Ｃ 类型的数据，才能构造出指针
+                    if (type == kJSTypeObject) {
+                        auto buffer = (Buffer*)JSObjectGetPrivate((JSObjectRef)arguments[0]);
+                        if (Buffer::isAsignFrom(buffer)) {
+                            ptr = (void*)buffer->bytes;
+                            JSObjectSetProperty(ctx, thisObject, bufferPName, arguments[0], kJSPropertyAttributeDontEnum, NULL);
+                        }
+                    }
+        }
+        
+        if (argumentCount > 1 && JSValueIsObject(ctx, arguments[1])) {
+            // 第二个参数为 第一个参数（指针）的释放方法，必须为 Buffer, 如果不是，则忽略
+            auto buffer = (Buffer*)JSObjectGetPrivate((JSObjectRef)arguments[0]);
+            if (Buffer::isAsignFrom(buffer)) {
+                bfree = *(void**)buffer->bytes;
+            }
+        }
+        
+        ((void**)buffer->bytes)[0] = ptr;
+        if (buffer->length >= sizeof(void*) * 2) {
+            // 原始 Buffer 实例做为 Pointer 实例时，没法设置释放方法
+            ((void**)buffer->bytes)[1] = bfree;
+        }
+    }
+    return thisObject;
+}
 
 
 static void BuildIn_Pointer_Destory(void* bytes) {
@@ -873,7 +940,7 @@ JSObjectRef BuildIn<void*, &ffi_type_pointer>::CallAsConstructor(_)
             if (Buffer::isAsignFrom(buffer)) {
                 ptr = (void*)buffer->bytes;
                 static JSStringRef name = JSStringCreateWithUTF8CString("__buffer__");
-                JSObjectSetProperty(ctx, obj, name, arguments[0], kJSPropertyAttributeReadOnly, NULL);
+                JSObjectSetProperty(ctx, obj, name, arguments[0], kJSPropertyAttributeDontEnum, NULL);
             }
         }
     }
@@ -1443,26 +1510,26 @@ static JSObjectRef LoadFFI(JSContextRef ctx)
     map<const char*, ffi_abi> abisMap = {
 #define IABI(abi) {"" # abi, FFI_## abi ## _ABI},
         
-        IABI(FIRST)
+//        IABI(FIRST)
         IABI(DEFAULT)
-        IABI(LAST)
-        {"SYSV", FFI_SYSV},
-        {"STDCALL", FFI_STDCALL},
-        {"THISCALL", FFI_THISCALL},
-        {"FASTCALL", FFI_FASTCALL},
-        {"PASCAL", FFI_PASCAL},
-        {"REGISTER", FFI_REGISTER},
-        
-        /* ---- Intel x86 Win32 ---------- */
-#ifdef X86_WIN32
-        {"MS_CDECL", FFI_MS_CDECL},
-        
-#elif defined(X86_WIN64)
-        {"WIN64", FFI_WIN64},
-#else
-        /* ---- Intel x86 and AMD x86-64 - */
-        {"UNIX64", FFI_UNIX64},   /* Unix variants all use the same ABI for x86-64  */
-#endif
+//        IABI(LAST)
+//        {"SYSV", FFI_SYSV},
+//        {"STDCALL", FFI_STDCALL},
+//        {"THISCALL", FFI_THISCALL},
+//        {"FASTCALL", FFI_FASTCALL},
+//        {"PASCAL", FFI_PASCAL},
+//        {"REGISTER", FFI_REGISTER},
+//        
+//        /* ---- Intel x86 Win32 ---------- */
+//#ifdef X86_WIN32
+//        {"MS_CDECL", FFI_MS_CDECL},
+//        
+//#elif defined(X86_WIN64)
+//        {"WIN64", FFI_WIN64},
+//#else
+//        /* ---- Intel x86 and AMD x86-64 - */
+//        {"UNIX64", FFI_UNIX64},   /* Unix variants all use the same ABI for x86-64  */
+//#endif
         
 #undef IABI
     };
